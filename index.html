@@ -1,0 +1,1874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="小说学英语">
+<meta name="theme-color" content="#0d1117">
+<link rel="manifest" href="./manifest.json">
+<title>小说学英语</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafaf8;--bg-alt:#f3f2ef;--surface:#fff;--surface-hover:#f6f6f4;
+  --text:#1c1c1c;--text-secondary:#6b6b6b;--text-tertiary:#999;
+  --accent:#2563eb;--accent-light:#60a5fa;--accent-bg:rgba(37,99,235,0.06);
+  --word-color:#059669;--word-bg:rgba(5,150,105,0.07);--word-border:rgba(5,150,105,0.4);
+  --border:rgba(0,0,0,0.07);--divider:rgba(0,0,0,0.04);
+  --shadow:0 1px 3px rgba(0,0,0,0.05);--shadow-lg:0 8px 30px rgba(0,0,0,0.1);
+  --radius:10px;--font-reading:'Noto Serif SC','Source Han Serif SC',serif;
+  --font-ui:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+}
+[data-theme="dark"]{
+  --bg:#0d1117;--bg-alt:#161b22;--surface:#161b22;--surface-hover:#1c2330;
+  --text:#e6edf3;--text-secondary:#8b949e;--text-tertiary:#6e7681;
+  --accent:#58a6ff;--accent-light:#79c0ff;--accent-bg:rgba(88,166,255,0.08);
+  --word-color:#3fb950;--word-bg:rgba(63,185,80,0.08);--word-border:rgba(63,185,80,0.4);
+  --border:rgba(255,255,255,0.08);--divider:rgba(255,255,255,0.04);
+  --shadow:0 1px 3px rgba(0,0,0,0.2);--shadow-lg:0 8px 30px rgba(0,0,0,0.4);
+}
+body{
+  font-family:var(--font-ui);background:var(--bg);color:var(--text);
+  min-height:100vh;min-height:100dvh;overflow-x:hidden;
+  -webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;
+  line-height:1.5;touch-action:manipulation;
+}
+.app{max-width:768px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+/* Header */
+.header{
+  padding:12px 16px;display:flex;align-items:center;justify-content:space-between;
+  background:var(--bg);position:sticky;top:0;z-index:100;
+  border-bottom:1px solid var(--divider);min-height:50px
+}
+.header-left{display:flex;align-items:center;gap:8px;min-width:0}
+.header-title{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.header-right{display:flex;gap:4px;flex-shrink:0}
+/* Buttons - 44px minimum touch target */
+.btn{
+  min-width:44px;min-height:44px;border-radius:50%;border:none;background:transparent;
+  color:var(--text-secondary);font-size:18px;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:background 0.15s;flex-shrink:0;padding:0;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.btn:active{background:var(--accent-bg);color:var(--accent)}
+.btn-on{
+  padding:6px 14px;border-radius:16px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text-secondary);font-size:12px;
+  cursor:pointer;min-height:36px;white-space:nowrap;font-family:var(--font-ui);
+  touch-action:manipulation;
+}
+.btn-on.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-on:active{opacity:0.8}
+/* Library */
+.library{flex:1;padding:16px}
+.library-empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:8vh 20px;text-align:center;color:var(--text-secondary)
+}
+.library-empty-icon{font-size:48px;margin-bottom:12px;opacity:0.5}
+.library-empty h2{font-size:17px;font-weight:600;margin-bottom:4px;color:var(--text)}
+.library-empty p{font-size:12px;margin-bottom:4px;line-height:1.6}
+.library-empty .hint{font-size:10px;color:var(--text-tertiary);margin-bottom:20px}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:6px;padding:11px 24px;
+  background:var(--accent);color:#fff;border:none;border-radius:20px;
+  font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-ui);
+  min-height:44px;touch-action:manipulation;
+}
+.btn-primary:active{transform:scale(0.96);opacity:0.85}
+.book-list{display:flex;flex-direction:column;gap:6px}
+.book-card{
+  background:var(--surface);border-radius:var(--radius);padding:14px 16px;
+  box-shadow:var(--shadow);cursor:pointer;border:1px solid var(--border);
+  display:flex;gap:10px;align-items:center;min-height:56px;
+  touch-action:manipulation;
+}
+.book-card:active{background:var(--surface-hover)}
+.book-card .icon{font-size:24px;flex-shrink:0}
+.book-card .info{flex:1;min-width:0}
+.book-card .info .t{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.book-card .info .m{font-size:10px;color:var(--text-tertiary);margin-top:1px}
+.book-card .pct{font-size:11px;color:var(--accent);font-weight:500;flex-shrink:0}
+.book-card .del{
+  min-width:32px;min-height:32px;border-radius:50%;border:none;background:transparent;
+  color:var(--text-tertiary);font-size:14px;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;
+}
+.book-card .del:active{color:#e5534b}
+/* Reader */
+.reader{flex:1;display:flex;flex-direction:column}
+.reader-content{
+  flex:1;padding:20px 16px 40px;overflow-y:auto;overflow-x:hidden;
+  font-family:var(--font-reading);line-height:2;text-align:justify;
+  -webkit-overflow-scrolling:touch;font-size:var(--fs,17px);letter-spacing:0.3px;
+  outline:none;
+}
+.reader-content p{margin-bottom:0.9em;text-indent:2em}
+.reader-content .chap-title{
+  font-size:calc(var(--fs,17px)*1.3);font-weight:700;text-align:center;
+  margin:1.2em 0 0.8em;text-indent:0;color:var(--accent);line-height:1.6
+}
+.vocab-word{
+  color:var(--word-color);font-weight:600;cursor:pointer;
+  border-bottom:1.5px dashed var(--word-border);
+  padding:1px 2px;background:var(--word-bg);border-radius:2px;
+  white-space:nowrap;display:inline;touch-action:manipulation;
+}
+.vocab-word:active{opacity:0.6}
+.vocab-word.known{opacity:0.35;border-bottom-style:dotted}
+.expr-block{
+  border-left:3px solid var(--accent-light);padding:2px 0 2px 10px;margin:2px 0;
+  background:var(--accent-bg);border-radius:0 6px 6px 0;display:block;text-indent:0;
+  cursor:pointer;touch-action:manipulation;
+}
+.expr-block:active{opacity:0.7}
+.expr-hint{font-size:10px;color:var(--text-tertiary);margin-left:4px;font-weight:400;font-family:var(--font-ui)}
+/* TOC drawer */
+.toc-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:250;
+  display:flex;animation:fadeIn 0.15s ease
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.toc-drawer{
+  width:280px;max-width:80vw;height:100%;background:var(--surface);
+  box-shadow:var(--shadow-lg);overflow-y:auto;padding:16px;
+  animation:slideLeft 0.2s ease
+}
+@keyframes slideLeft{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+.toc-drawer h3{font-size:15px;font-weight:600;margin-bottom:10px}
+.toc-item{
+  display:block;width:100%;text-align:left;padding:10px 12px;border:none;
+  background:transparent;color:var(--text);font-size:13px;cursor:pointer;
+  border-radius:6px;font-family:var(--font-ui);line-height:1.4;
+  border-bottom:1px solid var(--divider);touch-action:manipulation;
+}
+.toc-item:active{background:var(--accent-bg);color:var(--accent)}
+.toc-current{color:var(--accent);font-weight:600;background:var(--accent-bg)}
+/* Reader footer */
+.reader-footer{
+  padding:6px 12px;border-top:1px solid var(--divider);background:var(--bg);
+  display:flex;align-items:center;gap:6px;position:sticky;bottom:0;z-index:100;
+  min-height:44px
+}
+.progress-bar{flex:1;height:4px;background:var(--bg-alt);border-radius:2px;overflow:hidden;cursor:pointer;min-width:30px;touch-action:manipulation}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.2s}
+.progress-text{font-size:10px;color:var(--text-tertiary);min-width:34px;text-align:center}
+/* Popup */
+.popup-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:200;
+  display:flex;align-items:flex-end;justify-content:center;
+  animation:fadeIn 0.15s ease
+}
+.popup-sheet{
+  background:var(--surface);border-radius:18px 18px 0 0;width:100%;max-width:768px;
+  max-height:60vh;overflow-y:auto;padding:4px 20px 24px;
+  box-shadow:var(--shadow-lg);animation:slideUp 0.2s ease
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.popup-handle{width:32px;height:4px;background:var(--border);border-radius:2px;margin:8px auto 12px}
+.popup-word{font-size:21px;font-weight:600;color:var(--text);margin-bottom:2px}
+.popup-phonetic{font-size:12px;color:var(--text-tertiary);margin-bottom:6px}
+.popup-original{font-size:12px;color:var(--text-secondary);margin-bottom:4px}
+.popup-tag{display:inline-block;padding:2px 8px;background:var(--accent-bg);color:var(--accent);border-radius:10px;font-size:10px;margin-bottom:8px;font-weight:500}
+.popup-defs{font-size:13px;line-height:1.6;color:var(--text);margin-bottom:8px}
+.popup-defs .di{padding:5px 8px;margin-bottom:3px;background:var(--bg-alt);border-radius:6px}
+.popup-example{font-size:11px;color:var(--text-secondary);font-style:italic;padding:4px 0 8px 8px;border-left:2px solid var(--accent-light);margin:4px 0 0 2px}
+.popup-actions{display:flex;gap:8px;margin-top:12px}
+.popup-btn{
+  flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text);font-size:13px;cursor:pointer;
+  font-family:var(--font-ui);min-height:44px;touch-action:manipulation;
+}
+.popup-btn:active{background:var(--bg-alt)}
+.popup-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* Settings */
+.settings-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:300;
+  display:flex;align-items:flex-end;justify-content:center
+}
+.settings-sheet{
+  background:var(--surface);border-radius:18px 18px 0 0;width:100%;max-width:768px;
+  max-height:70vh;overflow-y:auto;padding:4px 20px 24px;
+  box-shadow:var(--shadow-lg);animation:slideUp 0.2s ease
+}
+.settings-section{margin-bottom:14px}
+.settings-label{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-tertiary);margin-bottom:6px;font-weight:500}
+.settings-row{display:flex;gap:6px;flex-wrap:wrap}
+.chip{
+  padding:8px 14px;border-radius:16px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text-secondary);font-size:12px;
+  cursor:pointer;font-family:var(--font-ui);min-height:40px;
+  touch-action:manipulation;
+}
+.chip:active{transform:scale(0.95)}
+.chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-full{width:100%;padding:12px;min-height:48px}
+/* Toast */
+.toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:var(--text);color:var(--bg);padding:8px 18px;
+  border-radius:16px;font-size:12px;box-shadow:var(--shadow-lg);
+  z-index:400;animation:fadeIn 0.2s ease;pointer-events:none
+}
+.hidden-input{display:none}
+/* Loading */
+.loading-overlay{
+  position:fixed;inset:0;background:var(--bg);z-index:500;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;font-family:var(--font-ui)
+}
+.loading-spinner{width:36px;height:36px;border:3px solid var(--divider);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:var(--text-secondary)}
+.loading-sub{font-size:11px;color:var(--text-tertiary)}
+.reader-content::-webkit-scrollbar{width:3px}
+.reader-content::-webkit-scrollbar-track{background:transparent}
+.reader-content::-webkit-scrollbar-thumb{background:var(--divider);border-radius:2px}
+@media(min-width:600px){
+  .reader-content{padding:28px 32px 40px}
+  .popup-sheet,.settings-sheet{padding:4px 28px 28px}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="header" id="header">
+    <div class="header-left">
+      <span class="header-title" id="headerTitle">小说学英语</span>
+      <button class="btn-on" id="btnTOC" style="display:none">☰ 目录</button>
+      <button class="btn-on" id="btnToggleMode" style="display:none">原文</button>
+    </div>
+    <div class="header-right">
+      <button class="btn" id="btnImport" title="导入">📂</button>
+      <button class="btn" id="btnSettings" title="设置">⚙</button>
+      <button class="btn" id="btnTheme" title="模式">◐</button>
+    </div>
+  </header>
+
+  <div class="library" id="libraryView">
+    <div class="library-empty" id="libraryEmpty">
+      <div class="library-empty-icon">📖</div>
+      <h2>导入小说，边读边学</h2>
+      <p>自动嵌入CET-4中低频 · CET-6 · 医学 · 地道表达</p>
+      <p class="hint">点击单词查释义 · 长按标记已知 · 支持原文对照</p>
+      <button class="btn-primary" id="btnImportMain">📂 导入 TXT 小说</button>
+    </div>
+    <div class="book-list" id="bookList" style="display:none"></div>
+  </div>
+
+  <div class="reader" id="readerView" style="display:none">
+    <div class="reader-content" id="readerContent"></div>
+    <div class="reader-footer">
+      <button class="btn" id="btnBack" title="书库">←</button>
+      <span class="progress-text" id="progressText">0%</span>
+      <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+      <button class="btn" id="btnFontDown" title="缩小">A⁻</button>
+      <button class="btn" id="btnFontUp" title="放大">A⁺</button>
+    </div>
+  </div>
+
+  <input type="file" accept=".txt,.text" class="hidden-input" id="fileInput">
+  <div id="toastContainer"></div>
+  <div class="loading-overlay" id="loadingOverlay" style="display:none">
+    <div class="loading-spinner"></div>
+    <div class="loading-text" id="loadingText">正在处理文本…</div>
+    <div class="loading-sub" id="loadingSub"></div>
+  </div>
+</div>
+
+<script>
+// 2000+ DICT entries inline
+const DICT = [
+  // ===== 四级中低频 (1) =====
+  // 抽象/学术
+  ['现象','phenomenon','n',1],['本质','essence','n',1],['概念','notion','n',1],
+  ['意识','consciousness','n',1],['认知','cognition','n',1],['视角','perspective','n',1],
+  ['维度','dimension','n',1],['框架','framework','n',1],['模式','pattern','n',1],
+  ['机制','mechanism','n',1],['原理','principle','n',1],['逻辑','rationale','n',1],
+  ['矛盾','contradiction','n',1],['困境','predicament','n',1],['悖论','paradox','n',1],
+  ['假设','premise','n',1],['论证','reasoning','n',1],['结论','verdict','n',1],
+  ['前提','prerequisite','n',1],['变量','variable','n',1],['趋势','inclination','n',1],
+  ['动机','impulse','n',1],['意图','intent','n',1],['偏见','prejudice','n',1],
+  ['歧视','discrimination','n',1],['准则','criterion','n',1],['规范','protocol','n',1],
+  ['共识','consensus','n',1],['争议','dispute','n',1],['冲突','collision','n',1],
+  ['妥协','concession','n',1],['优先','precedence','n',1],['策略','tactic','n',1],
+  ['资源','resource','n',1],['资产','asset','n',1],['收益','revenue','n',1],
+  ['风险','hazard','n',1],['潜力','capacity','n',1],['局限','constraint','n',1],
+  ['特征','trait','n',1],['属性','attribute','n',1],['声誉','repute','n',1],
+  ['权威','jurisdiction','n',1],['自由','autonomy','n',1],['平等','parity','n',1],
+  ['正义','righteousness','n',1],['义务','commitment','n',1],['责任','liability','n',1],
+  ['使命','vocation','n',1],['愿景','aspiration','n',1],['危机','upheaval','n',1],
+  ['灾难','calamity','n',1],['命运','destiny','n',1],['良知','integrity','n',1],
+  ['道德','morality','n',1],['伦理','ethics','n',1],['尊严','dignity','n',1],
+  ['同情','sympathy','n',1],['共鸣','resonance','n',1],['勇气','valor','n',1],
+  ['毅力','tenacity','n',1],['韧性','fortitude','n',1],['智慧','sagacity','n',1],
+  ['洞察','discernment','n',1],['直觉','instinct','n',1],['灵感','epiphany','n',1],
+  // 四级形容词
+  ['抽象','intangible','adj',1],['具体','tangible','adj',1],
+  ['主观','subjective','adj',1],['客观','detached','adj',1],
+  ['合理','plausible','adj',1],['荒谬','preposterous','adj',1],
+  ['讽刺','sarcastic','adj',1],['深刻','penetrating','adj',1],
+  ['微妙','nuanced','adj',1],['模糊','obscure','adj',1],
+  ['复杂','intricate','adj',1],['繁琐','cumbersome','adj',1],
+  ['精致','refined','adj',1],['粗糙','crude','adj',1],
+  ['独特','peculiar','adj',1],['杰出','prominent','adj',1],
+  ['非凡','singular','adj',1],['平庸','mundane','adj',1],
+  ['优雅','refined','adj',1],['谦虚','modest','adj',1],['傲慢','condescending','adj',1],
+  ['坦诚','candid','adj',1],['虚伪','insincere','adj',1],
+  ['谨慎','wary','adj',1],['鲁莽','rash','adj',1],
+  ['敏感','susceptible','adj',1],['脆弱','fragile','adj',1],
+  ['焦虑','apprehensive','adj',1],['压抑','suffocated','adj',1],
+  ['绝望','forlorn','adj',1],['感激','indebted','adj',1],
+  ['冷漠','aloof','adj',1],['热情','fervent','adj',1],
+  ['乐观','buoyant','adj',1],['悲观','somber','adj',1],
+  ['固执','inflexible','adj',1],['灵活','versatile','adj',1],
+  ['保守','orthodox','adj',1],['激进','militant','adj',1],
+  ['稳定','steadfast','adj',1],['神秘','enigmatic','adj',1],
+  // 四级动词
+  ['意识到','discern','v',1],['归类','classify','v',1],['概括','encapsulate','v',1],
+  ['分析','scrutinize','v',1],['评估','gauge','v',1],['预测','foresee','v',1],
+  ['推断','surmise','v',1],['阐明','expound','v',1],['论证','substantiate','v',1],
+  ['证实','corroborate','v',1],['否认','repudiate','v',1],['声称','allege','v',1],
+  ['暗示','allude','v',1],['强调','accentuate','v',1],['忽略','disregard','v',1],
+  ['轻视','belittle','v',1],['夸大','embellish','v',1],
+  ['促进','catalyze','v',1],['阻碍','stifle','v',1],['抑制','restrain','v',1],
+  ['激发','galvanize','v',1],['触发','precipitate','v',1],['加剧','compound','v',1],
+  ['缓解','appease','v',1],['消除','purge','v',1],
+  ['培养','foster','v',1],['适应','acclimate','v',1],['优化','streamline','v',1],
+  ['整合','amalgamate','v',1],['颠覆','upend','v',1],['革新','revamp','v',1],
+  ['延续','sustain','v',1],['中断','sever','v',1],['维持','uphold','v',1],
+  ['削弱','diminish','v',1],['弥补','redeem','v',1],['替代','displace','v',1],
+  ['面临','grapple','v',1],['规避','sidestep','v',1],['反抗','rebel','v',1],
+  ['忍受','endure','v',1],['崩溃','disintegrate','v',1],
+  ['反思','ruminate','v',1],['醒悟','disillusion','v',1],
+  // 四级副词
+  ['本质上','inherently','adv',1],['相对地','proportionally','adv',1],
+  ['显著地','conspicuously','adv',1],['不可避免地','inescapably','adv',1],
+  ['逐渐地','steadily','adv',1],['急剧地','steeply','adv',1],
+
+  // ===== 生活词汇 (1) — 实用但不基础 =====
+  ['拐杖','crutch','n',1],['轮椅','wheelchair','n',1],['担架','stretcher','n',1],
+  ['鼠标','cursor','n',1],['键盘','keyboard','n',1],['屏幕','monitor','n',1],
+  ['抽屉','drawer','n',1],['橱柜','cupboard','n',1],['水龙头','faucet','n',1],
+  ['插座','outlet','n',1],['开关','switch','n',1],['遥控器','remote','n',1],
+  ['窗帘','curtain','n',1],['百叶窗','blinds','n',1],['纱窗','screen','n',1],
+  ['阳台','balcony','n',1],['走廊','aisle','n',1],['楼梯','stairwell','n',1],
+  ['电梯','elevator','n',1],['扶手','handrail','n',1],['栏杆','railing','n',1],
+  ['天花板','ceiling','n',1],['地板','flooring','n',1],['瓷砖','tile','n',1],
+  ['地毯','carpet','n',1],['壁纸','wallpaper','n',1],['挂钩','hook','n',1],
+  ['衣架','hanger','n',1],['熨斗','iron','n',1],['缝纫机','sewing machine','n',1],
+  ['螺丝刀','screwdriver','n',1],['扳手','wrench','n',1],['钳子','pliers','n',1],
+  ['锤子','mallet','n',1],['钉子','nail','n',1],['螺丝','screw','n',1],
+  ['锯子','saw','n',1],['斧头','hatchet','n',1],['铲子','shovel','n',1],
+  ['扫帚','broom','n',1],['拖把','mop','n',1],['水桶','bucket','n',1],
+  ['梯子','stepladder','n',1],['手推车','trolley','n',1],['行李箱','suitcase','n',1],
+  ['背包','knapsack','n',1],['钱包','wallet','n',1],['护照','passport','n',1],
+  ['执照','certificate','n',1],['合同','indenture','n',1],['发票','receipt','n',1],
+  ['支票','voucher','n',1],['现金','tender','n',1],['硬币','token','n',1],
+  ['收据','stub','n',1],['账单','statement','n',1],['贷款','mortgage','n',1],
+  ['保险','underwriting','n',1],['股票','equity','n',1],['债券','debenture','n',1],
+  ['基金','endowment','n',1],['预算','allowance','n',1],['赤字','shortfall','n',1],
+  ['枕头','cushion','n',1],['床垫','mattress','n',1],['被褥','bedding','n',1],
+  ['蚊帐','canopy','n',1],['手电筒','lantern','n',1],['蜡烛','candle','n',1],
+  ['火柴','tinder','n',1],['打火机','igniter','n',1],['温度计','gauge','n',1],
+  ['指南针','compass','n',1],['望远镜','spyglass','n',1],['放大镜','loupe','n',1],
+  ['口罩','respirator','n',1],['手套','gauntlet','n',1],['围巾','wrap','n',1],
+  ['腰带','girdle','n',1],['拉链','fastener','n',1],['纽扣','clasp','n',1],
+  ['口袋','compartment','n',1],['袖口','cuff','n',1],['领口','neckline','n',1],
+  ['标签','tab','n',1],['商标','insignia','n',1],['包装','wrapper','n',1],
+  ['容器','receptacle','n',1],['盖子','covering','n',1],['塞子','stopper','n',1],
+
+  // ===== 六级核心 (2) =====
+  ['意识形态','doctrine','n',2],['霸权','dominance','n',2],['主权','prerogative','n',2],
+  ['民主','franchise','n',2],['专制','tyranny','n',2],['官僚','officialdom','n',2],
+  ['精英','meritocracy','n',2],['民粹','demagoguery','n',2],
+  ['殖民','settlement','n',2],['解放','deliverance','n',2],
+  ['革命','insurrection','n',2],['改革','restructuring','n',2],
+  ['创新','pioneering','n',2],['颠覆','subversion','n',2],
+  ['进化','metamorphosis','n',2],['退化','atrophy','n',2],
+  ['分化','cleavage','n',2],['融合','coalescence','n',2],
+  ['全球化','interdependence','n',2],['多元化','heterogeneity','n',2],
+  ['可持续','viability','n',2],['生态','biosphere','n',2],
+  ['濒危','teetering','adj',2],['灭绝','annihilation','n',2],
+  ['灾难性','ruinous','adj',2],['不可逆','terminal','adj',2],
+  ['指数级','geometric','adj',2],['微不足道','trifling','adj',2],
+  ['史无前例','unprecedented','adj',2],['不可思议','unfathomable','adj',2],
+  ['发人深省','sobering','adj',2],['引人入胜','captivating','adj',2],
+  ['扣人心弦','gripping','adj',2],['感人肺腑','stirring','adj',2],
+  ['令人发指','flagrant','adj',2],['荒谬绝伦','ludicrous','adj',2],
+  ['自相矛盾','incongruent','adj',2],['似是而非','fallacious','adj',2],
+  ['模棱两可','equivocating','adj',2],['含糊其辞','evasive','adj',2],
+  ['直言不讳','forthright','adj',2],['一针见血','piercing','adj',2],
+  ['鞭辟入里','dissecting','adj',2],['淋漓尽致','devastating','adj',2],
+  ['面面俱到','thorough','adj',2],['有条不紊','meticulous','adj',2],
+  ['杂乱无章','desultory','adj',2],['支离破碎','shattered','adj',2],
+  ['根深蒂固','inveterate','adj',2],['盘根错节','tangled','adj',2],
+  ['错综复杂','labyrinthine','adj',2],['扑朔迷离','elusive','adj',2],
+  ['耐人寻味','intriguing','adj',2],['意味深长','poignant','adj',2],
+  ['不言而喻','tacit','adj',2],['不容置疑','irrefutable','adj',2],
+  ['相辅相成','reciprocal','adj',2],['相得益彰','synergistic','adj',2],
+  ['密不可分','indivisible','adj',2],['背道而驰','divergent','adj',2],
+  ['格格不入','dissonant','adj',2],['势不两立','antagonistic','adj',2],
+  ['潜移默化','subliminal','adj',2],['循序渐进','incremental','adj',2],
+  ['急功近利','expedient','adj',2],['墨守成规','hidebound','adj',2],
+  ['标新立异','iconoclastic','adj',2],['独树一帜','distinctive','adj',2],
+  ['登峰造极','paramount','adj',2],['炉火纯青','virtuosic','adj',2],
+  ['叹为观止','awe-inspiring','adj',2],
+  // 六级动词
+  ['剖析','anatomize','v',2],['审视','peruse','v',2],['质疑','impugn','v',2],
+  ['揭露','unveil','v',2],['掩盖','suppress','v',2],['粉饰','gloss','v',2],
+  ['歪曲','garble','v',2],['篡改','tamper','v',2],['捏造','fabricate','v',2],
+  ['渲染','dramatize','v',2],['煽动','foment','v',2],['操纵','orchestrate','v',2],
+  ['勾结','collaborate','v',2],['诬陷','malign','v',2],['诽谤','calumniate','v',2],
+  ['诋毁','denigrate','v',2],['赞美','extol','v',2],['推崇','exalt','v',2],
+  ['崇拜','revere','v',2],['痴迷','infatuate','v',2],['沉溺','indulge','v',2],
+  ['克制','refrain','v',2],['压抑','quash','v',2],['宣泄','catharsis','n',2],
+  ['倾诉','unbosom','v',2],['哽咽','falter','v',2],['啜泣','whimper','v',2],
+  ['咆哮','bellow','v',2],['喃喃','murmur','v',2],['挖苦','lampoon','v',2],
+  ['调侃','badinage','n',2],['嘲讽','deride','v',2],
+  ['洞察','fathom','v',2],['领会','assimilate','v',2],['共鸣','resound','v',2],
+  ['疏远','estrange','v',2],['迎合','pander','v',2],['妥协','acquiesce','v',2],
+  ['抵抗','repulse','v',2],['摧毁','raze','v',2],['吞噬','engulf','v',2],
+  ['蔓延','permeate','v',2],['肆虐','devastate','v',2],
+  ['废除','abrogate','v',2],['推翻','overthrow','v',2],['瓦解','crumble','v',2],
+  ['复苏','resuscitate','v',2],['振兴','revitalize','v',2],['重建','rebuild','v',2],
+
+  // ===== 医学词汇 (3) =====
+  ['诊断','diagnostic','n',3],['预后','prognostic','n',3],
+  ['触诊','palpation','n',3],['听诊','auscultatory','adj',3],
+  ['主诉','presenting complaint','n',3],['现病史','present illness','n',3],
+  ['既往史','antecedent history','n',3],['家族史','familial history','n',3],
+  ['体格检查','physical findings','n',3],['鉴别诊断','differential workup','n',3],
+  ['金标准','benchmark','n',3],['特异性','distinctiveness','n',3],
+  ['敏感性','reactivity','n',3],['假阳性','false alarm','n',3],
+  ['循证医学','evidence-based practice','n',3],['临床指南','clinical protocol','n',3],
+  ['适应证','qualifying condition','n',3],['禁忌证','precluding condition','n',3],
+  ['不良反应','untoward effect','n',3],['并发症','ensuing condition','n',3],
+  ['合并症','concurrent illness','n',3],['多重用药','polymedication','n',3],
+  ['耐药性','refractoriness','n',3],['耐受性','endurance','n',3],
+  ['生物利用度','absorptivity','n',3],['半衰期','decay period','n',3],
+  ['治疗窗','therapeutic margin','n',3],['负荷剂量','priming dose','n',3],
+  ['维持剂量','sustaining dose','n',3],['滴定','dose escalation','n',3],
+  ['安慰剂','sham treatment','n',3],['双盲','double-masked','adj',3],
+  ['随机对照','randomized comparison','n',3],['队列研究','longitudinal study','n',3],
+  ['荟萃分析','pooled analysis','n',3],['系统综述','structured review','n',3],
+  ['偏倚','distortion','n',3],['混杂因素','confounding element','n',3],
+  ['因果关系','causal nexus','n',3],['相关性','interrelation','n',3],
+  ['发病率','attack rate','n',3],['患病率','affliction rate','n',3],
+  ['死亡率','lethality','n',3],['五年生存率','quinary survival','n',3],
+  ['流行病学','epidemiological','adj',3],['公共卫生','public sanitation','n',3],
+  ['三级预防','tertiary prophylaxis','n',3],['筛查','surveillance','n',3],
+  ['病理生理','pathomechanism','n',3],['发病机制','etiopathogenesis','n',3],
+  ['炎症反应','inflammatory cascade','n',3],['氧化应激','oxidative burden','n',3],
+  ['细胞凋亡','programmed death','n',3],['自噬','self-digestion','n',3],
+  ['坏死','gangrenous','adj',3],['缺血','underperfused','adj',3],
+  ['再灌注','revascularization','n',3],['侧支循环','bypass circulation','n',3],
+  ['代偿','compensatory','adj',3],['失代偿','decompensatory','adj',3],
+  ['内环境稳态','equilibrium','n',3],['反馈调节','modulation','n',3],
+  ['神经可塑性','rewiring','n',3],['突触','interstitial','adj',3],
+  ['神经递质','messenger molecule','n',3],['信号转导','signaling relay','n',3],
+  ['基因表达','transcription','n',3],['表观遗传','epigenetic modulation','n',3],
+  ['突变','alteration','n',3],['多态性','variation','n',3],
+  ['靶向治疗','precision therapy','n',3],['免疫疗法','immunomodulation','n',3],
+  ['单克隆抗体','monoclonal antibody','n',3],['干细胞','progenitor cell','n',3],
+  ['再生医学','restorative medicine','n',3],['器官移植','grafting','n',3],
+  ['排异反应','rejection episode','n',3],['免疫抑制','immunoquenching','n',3],
+
+  // ===== 地道表达 (4) =====
+  ['话虽如此','mind you','phrase',4],['退一步讲','to be fair','phrase',4],
+  ['从某种意义来说','so to speak','phrase',4],['大体上','on the whole','phrase',4],
+  ['长话短说','long story short','phrase',4],['归根结底','at the end of the day','phrase',4],
+  ['问题的核心','the nub of it','phrase',4],['一线希望','a faint glimmer','phrase',4],
+  ['冰山一角','barely scratching the surface','phrase',4],
+  ['一箭双雕','kill two birds with one stone','phrase',4],
+  ['本末倒置','bass ackwards','phrase',4],['雪上加霜','kick someone when they\'re down','phrase',4],
+  ['火上浇油','pour gasoline on the fire','phrase',4],
+  ['锦上添花','the cherry on top','phrase',4],['昙花一现','here today, gone tomorrow','phrase',4],
+  ['孤注一掷','all or nothing','phrase',4],['破釜沉舟','cross the Rubicon','phrase',4],
+  ['举棋不定','dithering','adj',4],['进退两难','in a cleft stick','phrase',4],
+  ['骑虎难下','hoist by one\'s own petard','phrase',4],
+  ['固执己见','dig in one\'s heels','phrase',4],
+  ['听天由命','throw in the towel','phrase',4],['随遇而安','go with the flow','phrase',4],
+  ['顺其自然','let the chips fall where they may','phrase',4],
+  ['无济于事','a drop in the bucket','phrase',4],['徒劳无功','barking up the wrong tree','phrase',4],
+  ['出乎意料','out of left field','phrase',4],['措手不及','flat-footed','adj',4],
+  ['不言自明','it stands to reason','phrase',4],['显而易见','plain as day','phrase',4],
+  ['无可厚非','fair enough','phrase',4],['情有可原','understandable','adj',4],
+  ['在所难免','par for the course','phrase',4],['势在必行','the writing is on the wall','phrase',4],
+  ['刻不容缓','a stitch in time','phrase',4],['迫在眉睫','breathing down one\'s neck','phrase',4],
+  ['当务之急','the order of the day','phrase',4],
+  ['久而久之','over the long haul','phrase',4],['日积月累','little by little','phrase',4],
+  ['持之以恒','stick with it','phrase',4],['厚积薄发','slow burn','phrase',4],
+  ['韬光养晦','play it close to the vest','phrase',4],
+  ['深藏不露','still waters run deep','phrase',4],
+  ['耳目一新','a welcome change','phrase',4],['焕然一新','a new lease on life','phrase',4],
+  ['面目全非','beyond recognition','phrase',4],['沧海桑田','sea change','phrase',4],
+  ['物是人非','you can\'t go home again','phrase',4],
+  ['时过境迁','water under the bridge','phrase',4],
+  // 更多地道表达
+  ['说白了','frankly put','phrase',4],['讲真的','in all honesty','phrase',4],
+  ['说句公道话','to give credit where it\'s due','phrase',4],
+  ['换位思考','put oneself in someone\'s shoes','phrase',4],
+  ['设身处地','walk a mile in someone\'s moccasins','phrase',4],
+  ['感同身受','feel it in one\'s bones','phrase',4],
+  ['身临其境','right in the thick of it','phrase',4],
+  ['置身事外','sit on the sidelines','phrase',4],
+  ['冷眼旁观','watch from the wings','phrase',4],
+  ['袖手旁观','stand idly by','phrase',4],
+  ['坐视不管','turn a blind eye','phrase',4],
+  ['视而不见','look the other way','phrase',4],
+  ['充耳不闻','turn a deaf ear','phrase',4],
+  ['置若罔闻','brush aside','phrase',4],
+  ['不屑一顾','dismiss out of hand','phrase',4],
+  ['嗤之以鼻','sniff at','phrase',4],
+  ['不以为然','beg to differ','phrase',4],
+  ['不敢苟同','can\'t go along with that','phrase',4],
+  ['难以启齿','stick in one\'s throat','phrase',4],
+  ['欲言又止','bite one\'s tongue','phrase',4],
+  ['吞吞吐吐','hem and haw','phrase',4],
+  ['闪烁其词','beat around the bush','phrase',4],
+  ['拐弯抹角','go round in circles','phrase',4],
+  ['开门见山','cut to the chase','phrase',4],
+  ['单刀直入','come straight to the point','phrase',4],
+  ['毫不客气','pull no punches','phrase',4],
+  ['不留情面','not mince words','phrase',4],
+  ['一针见血','hit the nail on the head','phrase',4],
+  ['一语中的','spot on','phrase',4],
+  ['切中要害','strike at the heart of','phrase',4],
+  ['鞭辟入里','cut to the bone','phrase',4],
+  ['见好就收','quit while one\'s ahead','phrase',4],
+  ['适可而止','draw the line','phrase',4],
+  ['过犹不及','too much of a good thing','phrase',4],
+  ['得不偿失','the game is not worth the candle','phrase',4],
+  ['事倍功半','more hassle than it\'s worth','phrase',4],
+  ['事半功倍','get more bang for the buck','phrase',4],
+  ['一举两得','kill two birds with one stone','phrase',4],
+  ['两全其美','have it both ways','phrase',4],
+  ['面面俱到','cover all bases','phrase',4],
+  ['滴水不漏','watertight','adj',4],
+  ['万无一失','fail-safe','adj',4],
+  ['胸有成竹','have a game plan','phrase',4],
+  ['心中有数','know the score','phrase',4],
+  ['了如指掌','know inside out','phrase',4],
+  ['如数家珍','rattle off','v',4],
+  ['信手拈来','off the top of one\'s head','phrase',4],
+  ['脱口而出','slip out','phrase',4],
+  ['不假思索','without a second thought','phrase',4],
+  ['想当然','take for granted','phrase',4],
+  ['理所当然','as a matter of course','phrase',4],
+  ['天经地义','carved in stone','phrase',4],
+  ['无可厚非','no grounds for complaint','phrase',4],
+  ['无懈可击','bulletproof','adj',4],
+  ['无可挑剔','beyond reproach','phrase',4],
+  ['精益求精','go the extra mile','phrase',4],
+  ['锦上添花','gild the lily','phrase',4],
+  ['画蛇添足','overegg the pudding','phrase',4],
+  ['多此一举','carry coals to Newcastle','phrase',4],
+  ['弄巧成拙','shoot oneself in the foot','phrase',4],
+  ['自食其果','reap what one sows','phrase',4],
+  ['自作自受','stew in one\'s own juice','phrase',4],
+  ['害人害己','cut off one\'s nose to spite one\'s face','phrase',4],
+  ['以卵击石','tilt at windmills','phrase',4],
+  ['螳臂当车','kick against the pricks','phrase',4],
+  ['杯水车薪','a drop in the ocean','phrase',4],
+  ['九牛一毛','a flea bite','phrase',4],
+  ['微乎其微','next to nothing','phrase',4],
+  ['屈指可数','few and far between','phrase',4],
+  ['凤毛麟角','once in a blue moon','phrase',4],
+  ['独树一帜','in a league of one\'s own','phrase',4],
+  ['鹤立鸡群','stand head and shoulders above','phrase',4],
+  ['出类拔萃','second to none','phrase',4],
+  ['佼佼者','cream of the crop','phrase',4],
+  ['旗鼓相当','neck and neck','phrase',4],
+  ['并驾齐驱','on a par with','phrase',4],
+  ['不分伯仲','too close to call','phrase',4],
+  ['后来居上','a dark horse','phrase',4],
+  ['青出于蓝','the pupil outdoes the master','phrase',4],
+
+  // ===== 小说描写词汇 — 情感/心理 (1) =====
+  ['悲伤','anguish','n',1],['喜悦','ecstasy','n',1],['愤怒','outrage','n',1],
+  ['恐惧','apprehension','n',1],['惊讶','astonishment','n',1],['厌恶','revulsion','n',1],
+  ['思念','yearning','n',1],['遗憾','compunction','n',1],['怀念','nostalgia','n',1],
+  ['欣慰','solace','n',1],['委屈','grievance','n',1],['不甘','reluctance','n',1],
+  ['茫然','bewilderment','n',1],['恍惚','daze','n',1],['忐忑','trepidation','n',1],
+  ['愧疚','remorse','n',1],['懊悔','penitence','n',1],['愤恨','indignation','n',1],
+  ['妒忌','covetousness','n',1],['鄙夷','disdain','n',1],['怜惜','tenderness','n',1],
+  ['动容','visibly moved','adj',1],['心酸','poignant','adj',1],['心痛','heartbreaking','adj',1],
+  ['忐忑不安','on edge','phrase',1],['心神不宁','perturbed','adj',1],
+  ['百感交集','overwhelmed with emotion','phrase',1],
+
+  // ===== 小说描写词汇 — 人物/外貌 (1) =====
+  ['憔悴','gaunt','adj',1],['瘦削','emaciated','adj',1],['苍老','wizened','adj',1],
+  ['俊美','comely','adj',1],['端庄','stately','adj',1],['妩媚','bewitching','adj',1],
+  ['清秀','delicate','adj',1],['魁梧','burly','adj',1],['文弱','bookish','adj',1],
+  ['儒雅','scholarly','adj',1],['痞气','roguish','adj',1],['憨厚','guileless','adj',1],
+  ['阴鸷','sinister','adj',1],['狰狞','ferocious','adj',1],['凶悍','truculent','adj',1],
+  ['威严','commanding','adj',1],['慈祥','genial','adj',1],['和蔼','affable','adj',1],
+  ['冷漠','callous','adj',1],['孤傲','haughty','adj',1],['洒脱','uninhibited','adj',1],
+
+  // ===== 小说描写词汇 — 动作/姿态 (1) =====
+  ['踱步','amble','v',1],['徘徊','linger','v',1],['踉跄','totter','v',1],
+  ['蹒跚','hobble','v',1],['疾步','stride','v',1],['驻足','halt','v',1],
+  ['凝视','gaze','v',1],['瞥见','glimpse','v',1],['打量','appraise','v',1],
+  ['端详','peruse','v',1],['扫视','scan','v',1],['回眸','glance back','v',1],
+  ['颤抖','shudder','v',1],['哆嗦','quiver','v',1],['瑟缩','cower','v',1],
+  ['蜷缩','huddle','v',1],['依偎','nestle','v',1],['搀扶','prop up','v',1],
+  ['抚摸','caress','v',1],['擦拭','dab','v',1],['拂去','flick away','v',1],
+  ['攥紧','clasp','v',1],['松开','unfasten','v',1],['捏碎','crumple','v',1],
+  ['推搡','jostle','v',1],['拽住','yank','v',1],['挣脱','wriggle free','v',1],
+
+  // ===== 小说描写词汇 — 对话/语气 (1) =====
+  ['反驳','counter','v',1],['质问','interrogate','v',1],['追问','press','v',1],
+  ['呵斥','admonish','v',1],['责备','upbraid','v',1],['埋怨','grumble','v',1],
+  ['嘟囔','mutter','v',1],['嘀咕','murmur','v',1],['念叨','prattle','v',1],
+  ['安慰','comfort','v',1],['劝慰','reassure','v',1],['叮嘱','enjoin','v',1],
+  ['敷衍','equivocate','v',1],['搪塞','deflect','v',1],['推脱','disclaim','v',1],
+  ['嘲讽','sneer','v',1],['奚落','belittle','v',1],['挖苦','quip','v',1],
+  ['调侃','wisecrack','v',1],['打趣','jest','v',1],['哄骗','coax','v',1],
+  ['恳求','entreat','v',1],['哀求','beseech','v',1],['央求','implore','v',1],
+  ['感叹','exclaim','v',1],['感慨','reflect','v',1],['叹息','bemoan','v',1],
+
+  // ===== 小说描写词汇 — 环境/氛围 (1) =====
+  ['阴暗','dreary','adj',1],['昏暗','murky','adj',1],['阴森','spooky','adj',1],
+  ['荒凉','bleak','adj',1],['萧瑟','desolate','adj',1],['凄清','forlorn','adj',1],
+  ['幽静','secluded','adj',1],['僻静','tranquil','adj',1],['嘈杂','clamorous','adj',1],
+  ['喧嚣','tumultuous','adj',1],['熙攘','bustling','adj',1],['冷清','lifeless','adj',1],
+  ['朦胧','hazy','adj',1],['氤氲','misty','adj',1],['弥漫','pervading','adj',1],
+  ['凌乱','disheveled','adj',1],['狼藉','squalid','adj',1],['整洁','immaculate','adj',1],
+  ['破败','ramshackle','adj',1],['陈旧','antiquated','adj',1],['斑驳','mottled','adj',1],
+  ['幽深','fathomless','adj',1],['空旷','cavernous','adj',1],['压抑','oppressive','adj',1],
+
+  // ===== 小说描写词汇 — 叙事/情节 (1) =====
+  ['往事','reminiscence','n',1],['往事如烟','water under the bridge','phrase',1],
+  ['辗转反侧','toss and turn','phrase',1],['彻夜未眠','sleepless night','phrase',1],
+  ['不期而遇','chance encounter','phrase',1],['擦肩而过','brush past','phrase',1],
+  ['四目相对','eyes met','phrase',1],['相视一笑','exchange a knowing smile','phrase',1],
+  ['沉默不语','tongue-tied','adj',1],['无言以对','dumbfounded','adj',1],
+  ['欲言又止','bite back words','phrase',1],['脱口而出','blurt','v',1],
+  ['心照不宣','tacit understanding','phrase',1],['不约而同','by coincidence','phrase',1],
+  ['显而易见','patently obvious','phrase',1],['可想而知','as one might expect','phrase',1],
+  ['毫无征兆','without warning','phrase',1],['猝不及防','ambushed','adj',1],
+  ['意料之中','to be expected','phrase',1],['意料之外','against all odds','phrase',1],
+
+  // ===== 第三批 — 高频小说场景词 (1) =====
+  // 神情/表情
+  ['皱眉','crease one\'s brow','v',1],['抿嘴','press one\'s lips','v',1],
+  ['撇嘴','curl one\'s lip','v',1],['撅嘴','pout','v',1],
+  ['眯眼','squint','v',1],['瞪眼','glower','v',1],['眨眼','flutter','v',1],
+  ['脸色发白','blanch','v',1],['脸红','flush','v',1],['脸色铁青','livid','adj',1],
+  ['面无表情','deadpan','adj',1],['神色自若','poised','adj',1],
+  ['目光炯炯','piercing gaze','phrase',1],['眼神躲闪','averted eyes','phrase',1],
+  // 心理活动
+  ['犹豫','waver','v',1],['迟疑','falter','v',1],['动摇','vacillate','v',1],
+  ['琢磨','mull over','v',1],['揣测','conjecture','v',1],['揣摩','fathom','v',1],
+  ['盘算','calculate','v',1],['权衡','deliberate','v',1],['思量','contemplate','v',1],
+  ['狐疑','skeptical','adj',1],['纳闷','perplexed','adj',1],['困惑','baffled','adj',1],
+  ['恍然大悟','epiphany','n',1],['幡然醒悟','sobering realization','phrase',1],
+  ['将信将疑','half convinced','phrase',1],['半信半疑','dubious','adj',1],
+  // 言谈举止
+  ['打断','interject','v',1],['插嘴','interpose','v',1],['抢白','cut in','v',1],
+  ['沉默','lapse into silence','v',1],['哑然','dumbstruck','adj',1],
+  ['干咳','clear one\'s throat','v',1],['假咳','feign a cough','v',1],
+  ['使眼色','signal with one\'s eyes','v',1],['努嘴','gesture with one\'s lips','v',1],
+  ['耸肩','give a shrug','v',1],['摊手','throw up one\'s hands','v',1],
+  // 场景/氛围
+  ['暮色','gloaming','n',1],['晨曦','aurora','n',1],['薄雾','wispy fog','n',1],
+  ['余晖','afterglow','n',1],['灯火','lamplight','n',1],['烛光','candlelight','n',1],
+  ['微风','zephyr','n',1],['细雨','mizzle','n',1],['暴雨','cloudburst','n',1],
+  ['雷鸣','thunderclap','n',1],['闪电','bolt of lightning','n',1],
+  ['幽暗','sepulchral','adj',1],['清冷','chilly','adj',1],['闷热','stifling','adj',1],
+  ['潮湿','damp','adj',1],['干燥','arid','adj',1],['刺骨','biting','adj',1],
+  ['寂静','hushed','adj',1],['死寂','deathly still','adj',1],['喧嚣','raucous','adj',1],
+  // 动作链
+  ['推门','push the door ajar','v',1],['叩门','rap on the door','v',1],
+  ['踱入','saunter in','v',1],['匆匆离去','hurry off','v',1],['悄然离去','slip away','v',1],
+  ['瘫坐','slump into a seat','v',1],['正襟危坐','sit ramrod straight','v',1],
+  ['辗转','toss about','v',1],['翻身','roll over','v',1],['惊醒','jolt awake','v',1],
+  ['揉眼','rub one\'s eyes','v',1],['伸懒腰','stretch languidly','v',1],
+  // 人际互动
+  ['寒暄','exchange pleasantries','v',1],['客套','exchange formalities','v',1],
+  ['赔笑','force a smile','v',1],['苦笑','grimace','v',1],['冷笑','smirk','v',1],
+  ['怒视','glare','v',1],['逼视','stare down','v',1],['回避','avert','v',1],
+  ['推辞','decline politely','v',1],['婉拒','graciously refuse','v',1],
+  ['默许','tacitly consent','v',1],['纵容','connive','v',1],['袒护','cover for','v',1],
+  ['刁难','obstruct','v',1],['为难','put on the spot','v',1],['冷落','give the cold shoulder','v',1],
+  // 叙事连接
+  ['良久','for a long while','adv',1],['片刻','momentarily','adv',1],
+  ['须臾','in a heartbeat','adv',1],['转瞬','in the blink of an eye','adv',1],
+  ['蓦然','abruptly','adv',1],['陡然','precipitously','adv',1],
+  ['果然','as anticipated','adv',1],['偏偏','as luck would have it','adv',1],
+  ['竟然','lo and behold','adv',1],['居然','to one\'s astonishment','adv',1],
+  ['恰巧','fortuitously','adv',1],['碰巧','by happenstance','adv',1],
+  ['稍微','somewhat','adv',1],['略微','fractionally','adv',1],['依稀','indistinctly','adv',1],
+
+  // ===== 经济/商业 (1) =====
+  ['通货膨胀','inflationary spiral','n',1],['通货紧缩','deflationary pressure','n',1],
+  ['货币政策','monetary stance','n',1],['财政赤字','fiscal shortfall','n',1],
+  ['国内生产总值','aggregate output','n',1],['供应链','supply logistics','n',1],
+  ['垄断','corner the market','v',1],['兼并','consolidate','v',1],['收购','procure','v',1],
+  ['破产','liquidation','n',1],['债务','indebtedness','n',1],['信贷','line of credit','n',1],
+  ['投资组合','allocation','n',1],['股息','payout','n',1],['市值','capitalization','n',1],
+  ['实体经济','tangible economy','n',1],['虚拟经济','speculative economy','n',1],
+  ['泡沫','bubble','n',1],['硬着陆','abrupt correction','n',1],['软着陆','gradual easing','n',1],
+  ['补贴','underwrite','v',1],['关税','levy','n',1],['配额','allotment','n',1],
+  ['倾销','undercut','v',1],['制裁','embargo','n',1],['禁运','blockade','n',1],
+
+  // ===== 法律/政治 (1) =====
+  ['立法','enact','v',1],['司法','judicature','n',1],['执法','enforce compliance','v',1],
+  ['诉讼','litigation','n',1],['仲裁','arbitrament','n',1],['调解','conciliation','n',1],
+  ['上诉','lodge an appeal','v',1],['驳回','overrule','v',1],['裁决','verdict','n',1],
+  ['量刑','sentencing','n',1],['缓刑','reprieve','n',1],['假释','conditional release','n',1],
+  ['定罪','convict','v',1],['赦免','exonerate','v',1],['引渡','extradite','v',1],
+  ['宪法','constitutional charter','n',1],['修正案','amendment','n',1],
+  ['全民公投','plebiscite','n',1],['弹劾','impeach','v',1],['罢免','depose','v',1],
+  ['任期','incumbency','n',1],['换届','transition of power','n',1],
+  ['游说','canvass','v',1],['提案','motion','n',1],['否决','veto','n',1],
+  ['人权','inalienable rights','n',1],['公民自由','civil liberties','n',1],
+
+  // ===== 科技/数字 (1) =====
+  ['人工智能','machine intelligence','n',1],['算法','algorithmic logic','n',1],
+  ['大数据','massive datasets','n',1],['云计算','distributed computing','n',1],
+  ['物联网','interconnected devices','n',1],['区块链','distributed ledger','n',1],
+  ['虚拟现实','immersive simulation','n',1],['增强现实','overlaid reality','n',1],
+  ['自动化','automation','n',1],['机器人','robotics','n',1],
+  ['量子计算','quantum computation','n',1],['纳米技术','nanoscale engineering','n',1],
+  ['生物技术','biotechnology','n',1],['基因编辑','genome manipulation','n',1],
+  ['加密','encipher','v',1],['解密','decrypt','v',1],['漏洞','exploit','n',1],
+  ['带宽','throughput','n',1],['延迟','lag','n',1],['协议','handshake','n',1],
+
+  // ===== 环境/生态 (1) =====
+  ['碳排放','carbon emissions','n',1],['温室效应','greenhouse effect','n',1],
+  ['可再生能源','inexhaustible energy','n',1],['化石燃料','hydrocarbon fuel','n',1],
+  ['退化','degradation','n',1],['荒漠化','encroaching desert','n',1],
+  ['森林砍伐','timber extraction','n',1],['水土流失','topsoil depletion','n',1],
+  ['物种灭绝','extirpation','n',1],['入侵物种','encroaching species','n',1],
+  ['生态平衡','ecological equilibrium','n',1],['承载能力','carrying capacity','n',1],
+  ['污染物','contaminant','n',1],['排放标准','emission threshold','n',1],
+  ['可降解','biodegradable','adj',1],['循环利用','repurpose','v',1],
+
+  // ===== 文化/艺术/文学 (2) =====
+  ['审美','sensibility','n',2],['意象','motif','n',2],['隐喻','allegory','n',2],
+  ['象征','emblematic','adj',2],['反讽','sardonic','adj',2],['夸张','hyperbolic','adj',2],
+  ['叙事','chronicle','n',2],['情节','storyline','n',2],['铺垫','prefigure','v',2],
+  ['伏笔','presage','n',2],['悬念','cliffhanger','n',2],['高潮','culmination','n',2],
+  ['转折','pivot','n',2],['结局','denouement','n',2],['尾声','epilogue','n',2],
+  ['独白','soliloquy','n',2],['对白','dialogue','n',2],['旁白','voiceover','n',2],
+  ['第一人称','firsthand account','n',2],['第三人称','omniscient narration','n',2],
+  ['现实主义','verisimilitude','n',2],['浪漫主义','romanticism','n',2],
+  ['古典','antiquity','n',2],['当代','contemporary','adj',2],['先锋','vanguard','n',2],
+  ['遗产','inheritance','n',2],['文物','antiquity','n',2],['古迹','relic','n',2],
+  ['修复','refurbish','v',2],['保存','safeguard','v',2],['发掘','excavate','v',2],
+
+  // ===== 心理/社会 (2) =====
+  ['潜意识','subconscious','n',2],['本能','primal urge','n',2],['冲动','compulsion','n',2],
+  ['防御机制','coping mechanism','n',2],['投射','project','v',2],
+  ['自我认同','self-identification','n',2],['归属感','affiliation','n',2],
+  ['疏离感','alienation','n',2],['焦虑症','anxious disorder','n',2],
+  ['抑郁症','clinical depression','n',2],['强迫症','compulsive behavior','n',2],
+  ['创伤后应激','post-traumatic stress','n',2],['心理韧性','mental fortitude','n',2],
+  ['社会化','acculturation','n',2],['阶层','echelon','n',2],['流动性','upward mobility','n',2],
+  ['人口结构','demographic profile','n',2],['老龄化','aging population','n',2],
+  ['城市化','urbanization','n',2],['边缘化','marginalization','n',2],
+  ['社会契约','social compact','n',2],['集体主义','communal ethos','n',2],
+  ['个人主义','individualistic creed','n',2],
+
+  // ===== 教育/学术 (2) =====
+  ['批判性思维','critical reasoning','n',2],['逻辑推理','logical deduction','n',2],
+  ['归纳','inductive reasoning','n',2],['演绎','deductive logic','n',2],
+  ['实证','empirical validation','n',2],['量化','quantify','v',2],
+  ['同行评审','peer scrutiny','n',2],['学术诚信','scholarly integrity','n',2],
+  ['剽窃','misappropriation','n',2],['引用','cite','v',2],['参考文献','works cited','n',2],
+  ['论文','treatise','n',2],['摘要','synopsis','n',2],['关键词','index term','n',2],
+  ['方法论','framework','n',2],['样本','specimen','n',2],['对照组','baseline group','n',2],
+  ['相关性','interrelationship','n',2],['因果','causal link','n',2],
+  ['课程体系','academic program','n',2],['教学大纲','scope and sequence','n',2],
+  ['评估','appraisal','n',2],['反馈','critique','n',2],['指导','tutelage','n',2],
+
+  // ===== 更多小说动作/描写 (1) =====
+  ['挪动','inch','v',1],['蠕动','wriggle','v',1],['抽搐','convulse','v',1],
+  ['踉跄','lurch','v',1],['一瘸一拐','limp','v',1],['跌跌撞撞','stumble','v',1],
+  ['猛地','jerkily','adv',1],['霍然','startled','adj',1],['倏地','swift','adj',1],
+  ['揉搓','knead','v',1],['摩挲','stroke','v',1],['轻抚','graze','v',1],
+  ['倚靠','lean against','v',1],['斜靠','lounge','v',1],['蜷曲','curl up','v',1],
+  ['瘫软','go limp','v',1],['发颤','wobble','v',1],['晃悠','dangle','v',1],
+  ['凋零','wilt','v',1],['枯萎','shrivel','v',1],['绽放','unfold','v',1],
+  ['流淌','course','v',1],['倾泻','cascade','v',1],['飞溅','splatter','v',1],
+  ['摇曳','flicker','v',1],['晃动','oscillate','v',1],['震颤','vibrate','v',1],
+  ['弥漫','suffuse','v',1],['笼罩','shroud','v',1],['缭绕','wreathe','v',1],
+
+  // ===== 更多情感/心理描写 (2) =====
+  ['触动','stir','v',2],['震撼','jolt','v',2],['冲击','buffet','v',2],
+  ['沸腾','seethe','v',2],['翻涌','billow','v',2],['汹涌','surging','adj',2],
+  ['窒息','asphyxiating','adj',2],['喘不过气','breathless','adj',2],
+  ['揪心','wrenching','adj',2],['刺骨','piercing','adj',2],['灼热','scorching','adj',2],
+  ['冰寒','frigid','adj',2],['温暖','balmy','adj',2],['清爽','crisp','adj',2],
+  ['阴沉','overcast','adj',2],['灰暗','dismal','adj',2],['明媚','radiant','adj',2],
+  ['烦躁','irritable','adj',2],['厌倦','jaded','adj',2],['懈怠','languid','adj',2],
+  ['忐忑','butterflies in one\'s stomach','phrase',2],
+
+  // ===== 高频短语搭配 (4) =====
+  ['与此相反','conversely','adv',4],['更准确地说','more precisely','phrase',4],
+  ['从这个角度看','from this vantage point','phrase',4],['鉴于','in light of','phrase',4],
+  ['凡是','whenever the occasion arises','phrase',4],['归根到底','boils down to','phrase',4],
+  ['简言之','in a nutshell','phrase',4],['广义上说','in the broadest sense','phrase',4],
+  ['严格地说','strictly construed','phrase',4],['就……而言','in terms of','phrase',4],
+  ['也就是说','which is to say','phrase',4],['换言之','to put it another way','phrase',4],
+  ['毫无疑问','beyond a shadow of doubt','phrase',4],['无庸置疑','unquestionably','adv',4],
+  ['不言而喻','axiomatically','adv',4],['可想而知','understandably','adv',4],
+  ['毋庸置疑','indisputably','adv',4],['显而易见','manifestly','adv',4],
+  ['不可否认','admittedly','adv',4],['尤其重要的','of paramount importance','phrase',4],
+  ['不容忽视','cannot be dismissed','phrase',4],['值得关注','merits scrutiny','phrase',4],
+  ['令人担忧','cause for alarm','phrase',4],['发人深省','food for thought','phrase',4],
+  ['令人深思','thought-provoking','adj',4],['耐人寻味','gives one pause','phrase',4],
+
+  // ===== 第五批 — 六级阅读高频词 (2) =====
+  ['显著的','pronounced','adj',2],['巨大的','colossal','adj',2],['微小的','minuscule','adj',2],
+  ['充足的','bountiful','adj',2],['匮乏的','destitute','adj',2],['过剩的','surplus','adj',2],
+  ['普遍的','ubiquitous','adj',2],['罕见的','scarce','adj',2],['独特的','idiosyncratic','adj',2],
+  ['固有的','innate','adj',2],['外来的','extraneous','adj',2],['内在的','intrinsic','adj',2],
+  ['潜在的','dormant','adj',2],['明显的','tangible','adj',2],['间接的','vicarious','adj',2],
+  ['初步的','rudimentary','adj',2],['最终的','definitive','adj',2],['过渡的','transitory','adj',2],
+  ['有利的','propitious','adj',2],['不利的','detrimental','adj',2],['有益的','salutary','adj',2],
+  ['有害的','noxious','adj',2],['致命的','lethal','adj',2],['无害的','innocuous','adj',2],
+  ['可靠的','credible','adj',2],['可疑的','dubitable','adj',2],['确凿的','incontrovertible','adj',2],
+  ['可行','practicable','adj',2],['不可行','implausible','adj',2],['可取','commendable','adj',2],
+  ['卓越','preeminent','adj',2],['杰出','illustrious','adj',2],['非凡','prodigious','adj',2],
+  ['著名','renowned','adj',2],['臭名昭著','notorious','adj',2],['声名狼藉','disreputable','adj',2],
+
+  // 六级动词补充
+  ['实施','operationalize','v',2],['执行','execute','v',2],['落实','effectuate','v',2],
+  ['贯彻','enforce','v',2],['推行','propagate','v',2],['倡导','champion','v',2],
+  ['发起','spearhead','v',2],['主持','preside over','v',2],['参与','partake','v',2],
+  ['介入','meddle','v',2],['干预','tamper','v',2],['干涉','encroach','v',2],
+  ['赋予','bestow','v',2],['授予','accord','v',2],['剥夺','deprive','v',2],
+  ['征收','expropriate','v',2],['没收','seize','v',2],['扣押','impound','v',2],
+  ['批准','endorse','v',2],['授权','delegate','v',2],['委派','designate','v',2],
+  ['任命','appoint','v',2],['提名','nominate','v',2],['当选','elect','v',2],
+  ['废除','rescind','v',2],['撤销','retract','v',2],['取消','invalidate','v',2],
+  ['修改','rectify','v',2],['修订','emend','v',2],['完善','hone','v',2],
+  ['提升','escalate','v',2],['降低','curtail','v',2],['缓解','ameliorate','v',2],
+  ['激化','polarize','v',2],['化解','defuse','v',2],['调和','conciliate','v',2],
+
+  // 六级名词补充
+  ['困境','quandary','n',2],['僵局','stalemate','n',2],['死胡同','cul-de-sac','n',2],
+  ['转折点','watershed','n',2],['分水岭','divide','n',2],['临界点','threshold','n',2],
+  ['催化剂','catalyst','n',2],['推动力','impetus','n',2],['绊脚石','stumbling block','n',2],
+  ['双刃剑','double-edged sword','n',2],['副作用','repercussion','n',2],
+  ['连锁反应','domino effect','n',2],['恶性循环','vicious spiral','n',2],
+  ['先例','antecedent','n',2],['后果','ramification','n',2],['影响','impact','n',2],
+  ['根源','root cause','n',2],['症状','manifestation','n',2],['迹象','indication','n',2],
+  ['脉络','context','n',2],['背景','backcloth','n',2],['前景','outlook','n',2],
+  ['蓝图','grand design','n',2],['雏形','prototype','n',2],['最终形态','finished form','n',2],
+  ['转折','inflection','n',2],['变迁','transition','n',2],['沿革','evolution','n',2],
+
+  // ===== 更多医学 (3) =====
+  ['血压','arterial pressure','n',3],['心率','cardiac rate','n',3],
+  ['呼吸频率','ventilation rate','n',3],['氧饱和度','oxygen saturation','n',3],
+  ['体温','core temperature','n',3],['意识水平','level of alertness','n',3],
+  ['反射','involuntary response','n',3],['肌力','muscle strength','n',3],
+  ['肌张力','muscle tone','n',3],['感觉','sensory perception','n',3],
+  ['病理','morbid anatomy','n',3],['病灶','affected site','n',3],
+  ['原发','primary site','n',3],['继发','secondary involvement','n',3],
+  ['转移','dissemination','n',3],['复发','relapse','n',3],['缓解','abatement','n',3],
+  ['痊愈','full recovery','n',3],['后遗症','residual effect','n',3],
+  ['耐药','refractory','adj',3],['敏感','responsive','adj',3],
+  ['辅助检查','ancillary testing','n',3],['影像学','imaging studies','n',3],
+  ['实验室检查','laboratory workup','n',3],['病理检查','pathological examination','n',3],
+  ['保守治疗','palliative management','n',3],['根治性治疗','curative treatment','n',3],
+  ['支持治疗','supportive care','n',3],['对症治疗','symptomatic relief','n',3],
+
+  // ===== 第六批 — 常用抽象名词 (1) =====
+  ['性质','disposition','n',1],['特征','hallmark','n',1],['特点','peculiarity','n',1],
+  ['共性','commonality','n',1],['差异','variance','n',1],['分歧','divergence','n',1],
+  ['联系','nexus','n',1],['关联','interconnection','n',1],['纽带','bond','n',1],
+  ['基础','underpinning','n',1],['前提','precondition','n',1],['保障','assurance','n',1],
+  ['途径','conduit','n',1],['渠道','channel','n',1],['媒介','intermediary','n',1],
+  ['平台','forum','n',1],['载体','vehicle','n',1],['工具','instrument','n',1],
+  ['手段','modality','n',1],['方式','fashion','n',1],['模式','paradigm','n',1],
+  ['系统','apparatus','n',1],['体制','regimen','n',1],['机制','machinery','n',1],
+  ['结构','configuration','n',1],['格局','landscape','n',1],['框架','scaffolding','n',1],
+  ['规模','magnitude','n',1],['范围','purview','n',1],['领域','territory','n',1],
+  ['层面','tier','n',1],['维度','facet','n',1],['角度','slant','n',1],
+  ['环节','segment','n',1],['阶段','juncture','n',1],['步骤','procedure','n',1],
+  ['过程','progression','n',1],['进程','momentum','n',1],['流程','workflow','n',1],
+  ['周期','cadence','n',1],['节奏','tempo','n',1],['频率','incidence','n',1],
+
+  // ===== 更多四级中低频动词 (1) =====
+  ['呈现','manifest','v',1],['展示','showcase','v',1],['揭露','divulge','v',1],
+  ['隐藏','shroud','v',1],['暗示','connote','v',1],['明示','stipulate','v',1],
+  ['强调','accent','v',1],['淡化','deemphasize','v',1],['突出','prominence','n',1],
+  ['体现','personify','v',1],['反映','mirror','v',1],['折射','refract','v',1],
+  ['象征','betoken','v',1],['代表','epitomize','v',1],['意味','signify','v',1],
+  ['构成','constitute','v',1],['组成','comprise','v',1],['包含','encompass','v',1],
+  ['排除','preclude','v',1],['包括','incorporate','v',1],['涵盖','span','v',1],
+  ['涉及','pertain to','v',1],['关系到','bear on','v',1],['影响到','impinge upon','v',1],
+  ['取决于','hinge on','v',1],['依赖于','rest upon','v',1],['受制于','beholden to','adj',1],
+  ['导致','eventuate','v',1],['造成','beget','v',1],['引起','elicit','v',1],
+
+  // ===== 第七批 — 形容词大补充 (1) =====
+  ['严谨','rigorous','adj',1],['周密','meticulous','adj',1],['细致','fastidious','adj',1],
+  ['粗略','perfunctory','adj',1],['草率','slapdash','adj',1],['马虎','slovenly','adj',1],
+  ['含糊','inexplicit','adj',1],['笼统','overgeneralized','adj',1],['具体','specific','adj',1],
+  ['透彻','lucid','adj',1],['深入','in-depth','adj',1],['全面','panoramic','adj',1],
+  ['客观','dispassionate','adj',1],['公正','equitable','adj',1],['不偏不倚','evenhanded','adj',1],
+  ['偏颇','tendentious','adj',1],['极端','inordinate','adj',1],['适中','temperate','adj',1],
+  ['严厉','draconian','adj',1],['宽厚','clement','adj',1],['仁慈','benevolent','adj',1],
+  ['凶狠','feral','adj',1],['残忍','inhumane','adj',1],['残暴','brutish','adj',1],
+  ['卑鄙','ignoble','adj',1],['高尚','magnanimous','adj',1],['崇高','exalted','adj',1],
+  ['庸俗','banal','adj',1],['低俗','vulgarian','adj',1],['粗俗','uncouth','adj',1],
+  ['文雅','genteel','adj',1],['典雅','classic','adj',1],['素雅','understated','adj',1],
+  ['华丽','resplendent','adj',1],['浮夸','ostentatious','adj',1],['朴素','unadorned','adj',1],
+  ['新颖','groundbreaking','adj',1],['陈旧','timeworn','adj',1],['老套','trite','adj',1],
+  ['奇妙','miraculous','adj',1],['诡异','preternatural','adj',1],['玄妙','esoteric','adj',1],
+  ['恐怖','macabre','adj',1],['惊悚','gruesome','adj',1],['骇人','horrendous','adj',1],
+  ['美好','idyllic','adj',1],['美妙','exquisite','adj',1],['绝妙','ingenious','adj',1],
+
+  // ===== 第八批 — 动词大补充 (1) =====
+  ['观察','contemplate','v',1],['审视','vet','v',1],['检验','assay','v',1],
+  ['探究','probe','v',1],['钻研','plumb','v',1],['考察','traverse','v',1],
+  ['调查','inquire','v',1],['搜查','ransack','v',1],['搜寻','forage','v',1],
+  ['追踪','pursue','v',1],['追查','ferret out','v',1],['追溯','retrace','v',1],
+  ['回忆','reminisce','v',1],['回顾','retrospect','n',1],['展望','envision','v',1],
+  ['规划','chart','v',1],['筹备','orchestrate','v',1],['安排','allocate','v',1],
+  ['处理','dispose of','v',1],['解决','untangle','v',1],['应对','grapple with','v',1],
+  ['承受','sustain','v',1],['容忍','brook','v',1],['接纳','embrace','v',1],
+  ['抗拒','repulse','v',1],['排斥','exclude','v',1],['驱逐','evict','v',1],
+  ['吸引','allure','v',1],['诱惑','entice','v',1],['迷惑','ensnare','v',1],
+  ['欺骗','hoodwink','v',1],['蒙蔽','delude','v',1],['隐瞒','withhold','v',1],
+  ['泄露','divulge','v',1],['暴露','unmask','v',1],['出卖','betray','v',1],
+  ['利用','harness','v',1],['借助','avail oneself of','v',1],['依赖','hinge upon','v',1],
+  ['抛弃','forsake','v',1],['放弃','cede','v',1],['舍弃','renounce','v',1],
+  ['保留','withhold','v',1],['保存','archive','v',1],['储备','stockpile','v',1],
+  ['消耗','deplete','v',1],['耗费','expend','v',1],['浪费','fritter','v',1],
+
+  // ===== 第九批 — 名词大补充 (1) =====
+  ['迹象','omen','n',1],['征兆','portent','n',1],['预兆','precursor','n',1],
+  ['端倪','inkling','n',1],['苗头','stirring','n',1],['趋势','undercurrent','n',1],
+  ['氛围','ambience','n',1],['气氛','tenor','n',1],['气场','aura','n',1],
+  ['意境','realm','n',1],['境界','pinnacle','n',1],['层次','gradation','n',1],
+  ['格调','panache','n',1],['品味','palate','n',1],['品位','refinement','n',1],
+  ['修养','decorum','n',1],['涵养','composure','n',1],['教养','upbringing','n',1],
+  ['素质','caliber','n',1],['素养','erudition','n',1],['资质','aptitude','n',1],
+  ['天赋','prodigy','n',1],['悟性','acumen','n',1],['灵性','spark','n',1],
+  ['胸怀','breadth of mind','n',1],['气度','largesse','n',1],['格局','vision','n',1],
+  ['眼界','vista','n',1],['见识','savvy','n',1],['阅历','seasoned experience','n',1],
+  ['底细','ins and outs','n',1],['来龙去脉','full particulars','n',1],
+  ['原委','circumstances','n',1],['经过','sequence of events','n',1],
+  ['缘由','causation','n',1],['起因','genesis','n',1],['导火索','precipitating factor','n',1],
+
+  // ===== 第十批 — 副词补充 (1) =====
+  ['勉强','grudgingly','adv',1],['执意','willfully','adv',1],['决意','resolutely','adv',1],
+  ['毅然','steadfastly','adv',1],['断然','categorically','adv',1],['贸然','precipitately','adv',1],
+  ['冒昧','presumptuously','adv',1],['冒失','imprudently','adv',1],['唐突','abruptly','adv',1],
+  ['连忙','hurriedly','adv',1],['急忙','scramblingly','adv',1],['匆忙','cursorily','adv',1],
+  ['不慌不忙','unhurriedly','adv',1],['从容','with aplomb','adv',1],['淡定','phlegmatically','adv',1],
+  ['慢悠悠','at a leisurely pace','adv',1],['磨磨蹭蹭','dawdlingly','adv',1],
+  ['偷偷','covertly','adv',1],['悄悄','discreetly','adv',1],['暗中','stealthily','adv',1],
+  ['公然','flagrantly','adv',1],['当众','publicly','adv',1],['当面','to one\'s face','adv',1],
+  ['暗自','inwardly','adv',1],['私下','privily','adv',1],['背后','behind one\'s back','adv',1],
+  ['猛然','startlingly','adv',1],['骤然','precipitately','adv',1],['蓦然','unexpectedly','adv',1],
+  ['始终','invariably','adv',1],['终究','eventually','adv',1],['迟早','in due course','adv',1],
+
+  // ===== 第十一批 — 六级必考词汇 (2) =====
+  ['合理的','justifiable','adj',2],['合法性','lawfulness','n',2],['合规','conformity','n',2],
+  ['违规','transgression','n',2],['违法','infraction','n',2],['犯罪','delinquency','n',2],
+  ['量刑','sentencing guidelines','n',2],['惩戒','chastisement','n',2],
+  ['威慑','intimidation','n',2],['预防','preemptive','adj',2],
+  ['改造','reformation','n',2],['教化','edification','n',2],['感化','reclamation','n',2],
+  ['多元化','manifold','adj',2],['包容性','inclusiveness','n',2],['排他性','exclusivity','n',2],
+  ['透明度','visibility','n',2],['公信力','credence','n',2],['执行力','enforcement capacity','n',2],
+  ['竞争力','competitiveness','n',2],['创新力','ingenuity','n',2],['生产力','productiveness','n',2],
+  ['凝聚力','cohesiveness','n',2],['向心力','centripetal force','n',2],
+  ['综合国力','composite national strength','n',2],
+  ['软实力','soft power','n',2],['话语权','discursive authority','n',2],
+  ['主导权','ascendancy','n',2],['主动权','upper hand','n',2],
+
+  // ===== 十二批 — 更多地道表达 (4) =====
+  ['毋庸置疑','beyond dispute','phrase',4],['不言自明','self-explanatory','adj',4],
+  ['可想而知','as one can imagine','phrase',4],['难以置信','beyond belief','phrase',4],
+  ['不可思议','mind-boggling','adj',4],['令人咋舌','jaw-dropping','adj',4],
+  ['令人不安','disconcerting','adj',4],['令人沮丧','dispiriting','adj',4],
+  ['令人振奋','exhilarating','adj',4],['令人鼓舞','heartening','adj',4],
+  ['令人欣慰','gratifying','adj',4],['令人遗憾','lamentable','adj',4],
+  ['令人惋惜','deplorable','adj',4],['令人钦佩','estimable','adj',4],
+  ['不值一提','trivial','adj',4],['不容小觑','not to be underestimated','phrase',4],
+  ['举足轻重','of considerable weight','phrase',4],['无关紧要','inconsequential','adj',4],
+  ['大相径庭','poles apart','phrase',4],['截然不同','antithetical','adj',4],
+  ['异曲同工','different approach, same result','phrase',4],
+  ['殊途同归','convergent paths','phrase',4],['不谋而合','coincident','adj',4],
+  ['一拍即合','hit it off instantly','phrase',4],['相见恨晚','regret not meeting sooner','phrase',4],
+  ['不欢而散','part on bad terms','phrase',4],['分道扬镳','part ways','phrase',4],
+  ['一拍两散','go their separate ways','phrase',4],['一刀两断','make a clean break','phrase',4],
+  ['不了了之','fizzle out','phrase',4],['悬而未决','remain in limbo','phrase',4],
+
+  // ===== 十三批 — 更多描写词 (1) =====
+  ['朦胧','veiled','adj',1],['模糊','blurry','adj',1],['清晰','crisp','adj',1],
+  ['隐约','shadowy','adj',1],['分明','well-defined','adj',1],['鲜明','stark','adj',1],
+  ['黯淡','lackluster','adj',1],['璀璨','scintillating','adj',1],['绚烂','gorgeous','adj',1],
+  ['素净','placid','adj',1],['淡雅','subtle','adj',1],['浓艳','flamboyant','adj',1],
+  ['清丽','limpid','adj',1],['俏丽','chic','adj',1],['艳丽','vivid','adj',1],
+  ['娇嫩','supple','adj',1],['水灵','dewy','adj',1],['枯黄','sallow','adj',1],
+  ['鬓白','hoary','adj',1],['须发皆白','venerable','adj',1],['白发苍苍','silver-haired','adj',1],
+  ['佝偻','crookbacked','adj',1],['蹒跚','doddering','adj',1],['龙钟','decrepit','adj',1],
+  ['矫健','agile','adj',1],['利落','snappy','adj',1],['麻利','expeditious','adj',1],
+  ['笨拙','bungling','adj',1],['迟钝','torpid','adj',1],['迟缓','sluggish','adj',1],
+  ['轻快','jaunty','adj',1],['稳健','unfaltering','adj',1],['沉重','ponderous','adj',1],
+  ['轻盈','airily','adv',1],['轻巧','nimbly','adv',1],['笨重','unwieldy','adj',1],
+
+  // ===== 十四批 — 更多动词描写 (1) =====
+  ['浮现','materialize','v',1],['闪过','flick across','v',1],['掠过','graze','v',1],
+  ['穿梭','crisscross','v',1],['往来','traverse','v',1],['穿行','thread through','v',1],
+  ['徘徊','hover','v',1],['盘旋','circle','v',1],['缭绕','wisp','v',1],
+  ['弥漫','saturate','v',1],['扩散','propagate','v',1],['蔓延','creep','v',1],
+  ['流淌','trickle','v',1],['奔涌','surge','v',1],['倾泻','torrent','n',1],
+  ['闪烁','twinkle','v',1],['闪耀','gleam','v',1],['照射','irradiate','v',1],
+  ['映照','mirror','v',1],['反射','bounce off','v',1],['折射','bend','v',1],
+  ['掩盖','obscure','v',1],['遮蔽','screen','v',1],['阻挡','thwart','v',1],
+  ['遮挡','intercept','v',1],['阻拦','deter','v',1],['阻止','prevent','v',1],
+  ['摧毁','demolish','v',1],['粉碎','pulverize','v',1],['撕裂','lacerate','v',1],
+  ['碾碎','crush','v',1],['揉碎','crumple','v',1],['撕碎','shred','v',1],
+
+  // ===== 十五批 — 人际/社会词汇 (1) =====
+  ['结识','become acquainted','v',1],['结交','befriend','v',1],
+  ['深交','intimate','adj',1],['泛泛之交','casual acquaintance','n',1],
+  ['知己','soulmate','n',1],['挚友','bosom friend','n',1],['至交','closest companion','n',1],
+  ['盟友','confederate','n',1],['同伴','comrade','n',1],['搭档','counterpart','n',1],
+  ['对手','adversary','n',1],['宿敌','nemesis','n',1],['仇敌','foe','n',1],
+  ['恩人','benefactor','n',1],['贵人','patron','n',1],['伯乐','talent scout','n',1],
+  ['晚辈','successor','n',1],['后辈','offspring','n',1],['同辈','coeval','n',1],
+  ['前辈','predecessor','n',1],['先辈','ancestor','n',1],['祖辈','progenitor','n',1],
+  ['同僚','associate','n',1],['上司','superordinate','n',1],['下属','underling','n',1],
+  ['门徒','disciple','n',1],['学徒','protege','n',1],['弟子','adherent','n',1],
+  ['师徒','master and pupil','n',1],['师生','mentor and student','n',1],
+
+  // ===== 十六批 — 抽象评价词 (2) =====
+  ['深远','far-reaching','adj',2],['广泛','widespread','adj',2],['狭隘','insular','adj',2],
+  ['宏大','monumental','adj',2],['渺小','infinitesimal','adj',2],['伟大','towering','adj',2],
+  ['崇高','lofty','adj',2],['卑微','menial','adj',2],['低贱','ignoble','adj',2],
+  ['优先','preferential','adj',2],['次要','ancillary','adj',2],['附带','tangential','adj',2],
+  ['主要','cardinal','adj',2],['根本','elemental','adj',2],['核心','pivotal','adj',2],
+  ['直接','forthright','adj',2],['间接','circuitous','adj',2],['曲折','convoluted','adj',2],
+  ['平坦','unimpeded','adj',2],['坎坷','checkered','adj',2],['崎岖','rugged','adj',2],
+  ['艰难','grueling','adj',2],['轻松','effortless','adj',2],['容易','facile','adj',2],
+  ['简单','rudimentary','adj',2],['简单明了','uncomplicated','adj',2],['一目了然','transparent','adj',2],
+
+  // 更多六级抽象名词
+  ['优越性','preeminence','n',2],['先进性','sophistication','n',2],
+  ['局限性','boundedness','n',2],['片面性','one-sidedness','n',2],
+  ['可能性','feasibility','n',2],['必然性','inevitability','n',2],
+  ['偶然性','fortuity','n',2],['随机性','stochasticity','n',2],
+  ['确定性','certitude','n',2],['不确定性','indeterminacy','n',2],
+  ['多样性','heterogeneity','n',2],['复杂性','perplexity','n',2],
+  ['系统性','coherence','n',2],['完整性','wholeness','n',2],
+  ['一致性','consonance','n',2],['连贯性','continuity','n',2],
+  ['可行性','practicability','n',2],['可操作性','actionability','n',2],
+  ['可持续性','perpetuity','n',2],['不可替代性','irreplaceability','n',2],
+
+  // ===== 十七批 — 六级核心词汇持续补充 (2) =====
+  ['繁荣','affluence','n',2],['昌盛','ascendancy','n',2],['兴旺','buoyancy','n',2],
+  ['衰落','decadence','n',2],['凋敝','destitution','n',2],['萧条','downturn','n',2],
+  ['复苏','resurgence','n',2],['振兴','revitalization','n',2],['崛起','upsurge','n',2],
+  ['崩溃','downfall','n',2],['解体','disintegration','n',2],['分裂','rupture','n',2],
+  ['统一','coalescence','n',2],['合并','amalgamation','n',2],['兼并','appropriation','n',2],
+  ['扩张','aggrandizement','n',2],['收缩','retrenchment','n',2],['膨胀','bloating','n',2],
+  ['压缩','compression','n',2],['释放','liberation','n',2],['集聚','agglomeration','n',2],
+  ['分散','dispersal','n',2],['扩散','proliferation','n',2],['集中','centralization','n',2],
+  ['转移','diversion','n',2],['转换','transmutation','n',2],['转型','metamorphosis','n',2],
+  ['升级','enhancement','n',2],['降级','demotion','n',2],['优化','refinement','n',2],
+  ['劣化','dilapidation','n',2],['改善','amelioration','n',2],['恶化','exacerbation','n',2],
+  ['规范','standardization','n',2],['完善','consummation','n',2],['健全','robustness','n',2],
+  ['巩固','fortification','n',2],['加强','bolstering','n',2],['削弱','emasculation','n',2],
+
+  // 六级高频形容词
+  ['空前的','unparalleled','adj',2],['绝后的','unsurpassable','adj',2],
+  ['划时代','epochal','adj',2],['里程碑式','landmark','adj',2],['突破性','pioneering','adj',2],
+  ['革命性','transformative','adj',2],['颠覆性','upending','adj',2],['破坏性','ravaging','adj',2],
+  ['建设性','constructive','adj',2],['创造性','innovative','adj',2],['启发性','illuminating','adj',2],
+  ['决定性','determinant','adj',2],['关键性','crucial','adj',2],['致命性','calamitous','adj',2],
+  ['实质性','substantive','adj',2],['形式性','ceremonial','adj',2],['象征性','token','adj',2],
+  ['根本性','fundamental','adj',2],['表面性','cosmetic','adj',2],['深层次','underlying','adj',2],
+  ['主导','prevailing','adj',2],['主流','predominant','adj',2],['支流','tributary','adj',2],
+  ['正统','canonical','adj',2],['异端','unorthodox','adj',2],['非主流','fringe','adj',2],
+  ['常规','conventional','adj',2],['例外','exceptional','adj',2],['反常','aberrent','adj',2],
+  ['典型','archetypal','adj',2],['非典型','atypical','adj',2],['代表性','representative','adj',2],
+  ['普遍性','generic','adj',2],['特殊性','especial','adj',2],['个别性','isolated','adj',2],
+
+  // 六级高频动词
+  ['赋予','endue','v',2],['寄予','vest','v',2],['托付','confide','v',2],
+  ['责成','obligate','v',2],['责令','injunct','v',2],['勒令','compel','v',2],
+  ['迫使','coerce','v',2],['驱使','goad','v',2],['促使','precipitate','v',2],
+  ['激励','motivate','v',2],['勉励','exhort','v',2],['鞭策','prod','v',2],
+  ['鼓舞','embolden','v',2],['振奋','rouse','v',2],['激发','kindle','v',2],
+  ['安抚','assuage','v',2],['抚慰','solace','v',2],['慰藉','console','v',2],
+  ['缓和','mitigate','v',2],['平息','appease','v',2],['镇定','compose','v',2],
+  ['煽动','agitate','v',2],['挑拨','foment','v',2],['离间','alienate','v',2],
+  ['拉拢','cozy up to','v',2],['笼络','win over','v',2],['收买','suborn','v',2],
+  ['胁迫','browbeat','v',2],['要挟','blackmail','v',2],['勒索','extort','v',2],
+  ['诬蔑','stigmatize','v',2],['抹黑','besmirch','v',2],['丑化','demonize','v',2],
+  ['美化','garland','v',2],['神化','deify','v',2],['妖魔化','villainize','v',2],
+
+  // ===== 十八批 — 学术/议论文高频词 (2) =====
+  ['阐述','delineate','v',2],['论述','expound','v',2],['评述','critique','v',2],
+  ['概述','outline','v',2],['详述','particularize','v',2],['赘述','belabor','v',2],
+  ['引用','invoke','v',2],['援引','adduce','v',2],['征引','refer to','v',2],
+  ['佐证','corroborate','v',2],['印证','attest to','v',2],['例证','instantiate','v',2],
+  ['假设','presuppose','v',2],['假定','hypothesize','v',2],['推测','extrapolate','v',2],
+  ['推翻','invalidate','v',2],['颠覆','turn on its head','v',2],['修正','adjust','v',2],
+  ['补充','supplement','v',2],['拓展','amplify','v',2],['延伸','prolong','v',2],
+  ['深化','intensify','v',2],['升华','transcend','v',2],['凝练','condense','v',2],
+  ['概括','recapitulate','v',2],['归结','ascribe','v',2],['溯源','retrace','v',2],
+  ['界定','demarcate','v',2],['定义','formulate','v',2],['诠释','interpret','v',2],
+
+  // 学术名词
+  ['论点','thesis','n',2],['论据','supporting grounds','n',2],['论证','line of argument','n',2],
+  ['论点','standpoint','n',2],['论调','rhetoric','n',2],['论述','exposition','n',2],
+  ['视角','lens','n',2],['框架','construct','n',2],['范式','exemplar','n',2],
+  ['学说','tenet','n',2],['学派','school of thought','n',2],['思潮','school','n',2],
+  ['理论体系','theoretical edifice','n',2],['方法论','modus operandi','n',2],
+  ['认识论','epistemological','adj',2],['本体论','ontological','adj',2],
+  ['价值判断','value assessment','n',2],['事实判断','factual determination','n',2],
+  ['定性','qualitative','adj',2],['定量','quantifiable','adj',2],
+  ['宏观','macro-level','adj',2],['微观','micro-level','adj',2],
+  ['主观能动性','volitional agency','n',2],['客观规律','external regularities','n',2],
+
+  // ===== 19批：六级动词猛加 =====
+  ['涵盖','encompass','v',2],['囊括','embrace','v',2],['概括','subsume','v',2],
+  ['制约','constrain','v',2],['束缚','fetter','v',2],['禁锢','shackle','v',2],
+  ['突破','transcend','v',2],['超越','outstrip','v',2],['跨越','leapfrog','v',2],
+  ['领先','outpace','v',2],['落后','trail','v',2],['追赶','catch up','v',2],
+  ['倡导','espouse','v',2],['呼吁','exhort','v',2],['号召','rally','v',2],
+  ['响应','heed','v',2],['顺应','conform to','v',2],['迎合','pander to','v',2],
+  ['抵制','defy','v',2],['反抗','buck','v',2],['对抗','confront','v',2],
+  ['协商','parley','v',2],['洽谈','negotiate','v',2],['磋商','deliberate','v',2],
+  ['签署','ink','v',2],['缔结','conclude','v',2],['废止','abrogate','v',2],
+  ['履行','fulfill','v',2],['遵守','comply','v',2],['违背','contravene','v',2],
+  ['触犯','infract','v',2],['冒犯','transgress','v',2],['侵犯','impinge','v',2],
+  ['维护','safeguard','v',2],['捍卫','vindicate','v',2],['守护','guardian','n',2],
+  ['损害','impair','v',2],['侵害','infringe','v',2],['危害','jeopardize','v',2],
+  ['危及','imperil','v',2],['波及','reverberate','v',2],['席卷','sweep','v',2],
+  ['遍布','dot','v',2],['遍及','span','v',2],['普及','percolate','v',2],
+
+  // ===== 20批：六级形容词/名词 =====
+  ['前所未有的','hitherto unknown','adj',2],['无可比拟的','peerless','adj',2],
+  ['不可逾越的','insurmountable','adj',2],['不可调和的','irreconcilable','adj',2],
+  ['不可抗拒的','overpowering','adj',2],['不可动摇的','unassailable','adj',2],
+  ['不可否认的','undeniable','adj',2],['不可估量的','incalculable','adj',2],
+  ['刻不容缓的','overdue','adj',2],['发人深思的','compelling','adj',2],
+  ['分水岭','watershed','n',2],['里程碑','hallmark','n',2],
+  ['天花板','ceiling','n',2],['瓶颈期','plateau','n',2],['阵痛期','growing pains','n',2],
+  ['过渡期','interregnum','n',2],['转型期','transitional phase','n',2],
+  ['舒适区','comfort zone','n',2],['灰色地带','gray zone','n',2],['盲区','blind spot','n',2],
+  ['突破口','entry point','n',2],['切入点','wedge issue','n',2],['着力点','fulcrum','n',2],
+  ['出发点','departure point','n',2],['落脚点','ultimate aim','n',2],
+
+  // ===== 21批：小说场景词补充 =====
+  ['阳台上','veranda','n',1],['阁楼','garret','n',1],['地下室','cellar','n',1],
+  ['玄关','foyer','n',1],['过道','passageway','n',1],['壁炉','hearth','n',1],
+  ['栅栏','stockade','n',1],['篱笆','hedge','n',1],['围墙','perimeter','n',1],
+  ['庭院','courtyard','n',1],['天井','atrium','n',1],['露台','terrace','n',1],
+  ['路灯','streetlamp','n',1],['长椅','bench','n',1],['秋千','swing','n',1],
+  ['不卑不亢','poised','adj',1],['不骄不躁','composed','adj',1],
+  ['不声不响','unobtrusive','adj',1],['不理不睬','indifferent','adj',1],
+  ['不知不觉','imperceptibly','adv',1],['不情不愿','begrudgingly','adv',1],
+  ['不明不白','ambiguous','adj',1],['不清不楚','muddled','adj',1],
+  ['悲欢离合','vicissitudes','n',1],['喜怒哀乐','emotional spectrum','n',1],
+  ['人情世故','social protocols','n',1],['待人接物','interpersonal dealings','n',1],
+  ['世态炎凉','worldly vicissitudes','n',1],['沧海桑田','sea change','n',1],
+
+  // ===== 22批：更多六级核心 =====
+  ['灌输','inculcate','v',2],['传授','impart','v',2],['传承','perpetuate','v',2],
+  ['继承','inherit','v',2],['发扬','carry forward','v',2],
+  ['摒弃','discard','v',2],['取其精华','distill the essence','v',2],
+  ['推陈出新','innovate upon tradition','phrase',2],
+  ['博采众长','draw upon collective strengths','phrase',2],
+  ['融会贯通','synthesize and internalize','phrase',2],
+  ['提纲挈领','grasp the essentials','phrase',2],
+  ['以偏概全','overgeneralize','v',2],['以貌取人','judge by appearance','phrase',2],
+  ['本末倒置','misplaced priorities','phrase',2],
+  ['小题大做','make a mountain out of a molehill','phrase',2],
+  ['大惊小怪','make a fuss','phrase',2],['见怪不怪','accustomed','adj',2],
+  ['置若罔闻','turn a deaf ear','phrase',2],['视而不见','overlook','v',2],
+  ['掉以轻心','let one\'s guard down','phrase',2],['麻痹大意','complacent','adj',2],
+  ['粗心大意','negligent','adj',2],['疏忽大意','heedless','adj',2],
+  ['自以为是','self-righteous','adj',2],['刚愎自用','headstrong','adj',2],
+  ['独断专行','peremptory','adj',2],['一意孤行','willful','adj',2],
+
+  // ===== 23批：补齐2000+ =====
+  ['贫富差距','affluence gap','n',2],['两极分化','bifurcation','n',2],
+  ['社会公平','equity','n',2],['机会均等','equal opportunity','n',2],
+  ['阶层固化','class rigidification','n',2],['向上流动','upward trajectory','n',2],
+  ['资源分配','resource allotment','n',2],['利益格局','interest configuration','n',2],
+  ['治理体系','governance structure','n',2],['制度保障','institutional safeguard','n',2],
+  ['法律框架','legal architecture','n',2],['政策工具','policy lever','n',2],
+  ['宏观调控','macroeconomic steering','n',2],['市场调节','market-based adjustment','n',2],
+  ['简政放权','streamlined governance','n',2],['放管结合','deregulation with oversight','n',2],
+  ['优化服务','service refinement','n',2],['营商环境','business habitat','n',2],
+  ['创新驱动','innovation-propelled','adj',2],['转型升级','transformative restructuring','n',2],
+  ['高质量发展','high-caliber development','n',2],['供给侧改革','supply-side overhaul','n',2],
+  ['需求侧管理','demand-side stewardship','n',2],['双循环','dual circulation','n',2],
+  ['新常态','new equilibrium','n',2],['底线','redline','n',2],['红线','threshold','n',2],
+  ['百年未有之大变局','momentous changes unseen in a century','phrase',2],
+  ['伟大复兴','grand rejuvenation','n',2],['历史性跨越','historic stride','n',2],
+  ['决定性成就','watershed accomplishment','n',2],['根本性转变','elemental shift','n',2],
+  ['战略性布局','strategic configuration','n',2],['全局性谋划','holistic planning','n',2],
+  ['踔厉奋发','forge ahead with resolve','phrase',2],['笃行不怠','steadfast in action','phrase',2],
+  ['越是艰险越向前','press ahead against all odds','phrase',2],
+  ['同舟共济','collective endeavor','phrase',2],['众志成城','united resolve','phrase',2],
+  ['万众一心','singleness of purpose','phrase',2],['齐心协力','concerted effort','phrase',2],
+
+  // 更多生活/实用词
+  ['围裙','pinafore','n',1],['袖套','oversleeve','n',1],['拖鞋','slippers','n',1],
+  ['浴巾','bath towel','n',1],['肥皂','lather','n',1],['洗衣粉','detergent','n',1],
+  ['漂白剂','bleaching agent','n',1],['柔顺剂','fabric softener','n',1],
+  ['消毒剂','sanitizer','n',1],['除臭剂','deodorizer','n',1],
+  ['杀虫剂','insecticide','n',1],['除草剂','herbicide','n',1],
+  ['灭火器','extinguisher','n',1],['急救箱','first-aid kit','n',1],
+  ['工具箱','tool chest','n',1],['药箱','medicine cabinet','n',1],
+  ['针线盒','sewing kit','n',1],['首饰盒','trinket box','n',1],
+  ['储蓄罐','coin bank','n',1],['存钱罐','piggy bank','n',1],
+  ['老花镜','reading glasses','n',1],['太阳镜','sunglasses','n',1],
+  ['放大镜','magnifying lens','n',1],['显微镜','magnifying instrument','n',1],
+  ['望远镜','field glasses','n',1],['天文望远镜','astronomical telescope','n',1],
+  ['风向标','weathercock','n',1],['晴雨表','barometer','n',1],
+  ['气压计','pressure gauge','n',1],['湿度计','moisture meter','n',1],
+];
+const CTX_RULES = {
+  // 只保留最关键、最容易出错的语境规则
+  '意识': {rejectAfter:['到','到了','不到']},       // 意识到=realize
+  '崩溃': {rejectAfter:['了','的']},                 // 崩溃了=collapsed
+  '绝望': {rejectAfter:['地']},                       // 绝望地=desperately
+  '焦虑': {rejectAfter:['症']},                       // 焦虑症≠anxious
+  '压抑': {rejectAfter:['感']},                       // 压抑感≠suffocated
+  '敏感': {rejectAfter:['性','度']},                 // 敏感性=sensitivity
+  '稳定': {rejectBefore:['不']},                      // 不稳定≠steadfast
+  '自由': {rejectAfter:['地'], rejectBefore:['不']}, // 自由地=freely; 不自由≠liberty
+  '责任': {rejectAfter:['感','心']},                 // 责任感≠liability
+  '偏见': {rejectAfter:['的']},                       // 偏见的=biased
+  '歧视': {rejectAfter:['性','的']},                 // 歧视性=discriminatory
+  '妥协': {rejectAfter:['了']},                       // 妥协了=compromised
+  '争议': {rejectBefore:['无','没有']},              // 无争议≠dispute
+  '动机': {rejectBefore:['无','没有']},              // 无动机≠impulse
+  '风险': {rejectBefore:['无','零']},                // 无风险≠hazard
+  '繁荣': {rejectAfter:['的']},                       // 繁荣的=prosperous
+  '衰退': {rejectAfter:['了']},                       // 衰退了=declined
+  '显著': {rejectAfter:['地']},                       // 显著地=significantly
+};
+
+function checkContext(trimmed, entry, start, end){
+  const rules = CTX_RULES[entry[0]];
+  if(!rules) return true; // 没有规则，允许
+  const before = trimmed.substring(Math.max(0,start-5), start);
+  const after = trimmed.substring(end, Math.min(trimmed.length, end+5));
+  if(rules.rejectBefore){
+    for(const w of rules.rejectBefore){ if(before.includes(w)) return false; }
+  }
+  if(rules.rejectAfter){
+    for(const w of rules.rejectAfter){ if(after.includes(w)) return false; }
+  }
+  if(rules.requireBefore){
+    let ok=false;
+    for(const w of rules.requireBefore){ if(before.includes(w)){ok=true;break;} }
+    if(!ok) return false;
+  }
+  if(rules.requireAfter){
+    let ok=false;
+    for(const w of rules.requireAfter){ if(after.includes(w)){ok=true;break;} }
+    if(!ok) return false;
+  }
+  return true;
+}
+
+// 构建分词索引（优化：前缀集+限制长度，避免O(n*m)全量扫描）
+const dictMap = new Map();
+const firstCharSet = new Set();
+const maxWordLen = 12;
+for(const e of DICT){
+  const [cn]=e;
+  if(!dictMap.has(cn)||dictMap.get(cn)[3]>e[3]) dictMap.set(cn,e);
+  if(cn.length>0) firstCharSet.add(cn[0]);
+}
+const dictByLen = new Map();
+for(const cn of dictMap.keys()){
+  const l=cn.length;
+  if(!dictByLen.has(l)) dictByLen.set(l,[]);
+  dictByLen.get(l).push(cn);
+}
+
+// ============================================================
+// 分词 & 编码检测（优化版）
+// ============================================================
+function segmentSentence(text){
+  const tokens=[]; let i=0; const len=text.length;
+  while(i<len){
+    // 快速跳过：首字不在任何词典词中，直接作为普通字
+    if(!firstCharSet.has(text[i])){
+      if(tokens.length&&!tokens[tokens.length-1].entry){ tokens[tokens.length-1].text+=text[i]; tokens[tokens.length-1].end=i+1; }
+      else tokens.push({text:text[i],entry:null,start:i,end:i+1});
+      i++; continue;
+    }
+    let matched=null;
+    const maxL=Math.min(maxWordLen,len-i);
+    for(let l=maxL;l>=1;l--){
+      const sub=text.substring(i,i+l);
+      if(dictMap.has(sub)){ matched={text:sub,entry:dictMap.get(sub),start:i,end:i+l}; break; }
+    }
+    if(matched){ tokens.push(matched); i+=matched.text.length; }
+    else {
+      if(tokens.length&&!tokens[tokens.length-1].entry){ tokens[tokens.length-1].text+=text[i]; tokens[tokens.length-1].end=i+1; }
+      else tokens.push({text:text[i],entry:null,start:i,end:i+1});
+      i++;
+    }
+  }
+  return tokens;
+}
+
+function detectEncoding(buffer){
+  try{
+    const d=new TextDecoder('utf-8',{fatal:true}); const text=d.decode(buffer);
+    const g=(text.match(/�/g)||[]).length, q=(text.match(/\?{3,}/g)||[]).length;
+    if(g>5||q>8) throw new Error('likely GBK');
+    return {text,encoding:'utf-8'};
+  }catch(e){
+    try{ return {text:new TextDecoder('gbk').decode(buffer),encoding:'gbk'}; }
+    catch(e2){ return {text:new TextDecoder('gb2312').decode(buffer),encoding:'gb2312'}; }
+  }
+}
+
+// ============================================================
+// 解析章节目录
+// ============================================================
+function parseTOC(text){
+  const chapters=[];
+  const lines=text.split('\n');
+  let charPos=0;
+  const patterns=[
+    /^第[零一二三四五六七八九十百千\d]+[章节回卷集部篇]/,
+    /^Chapter\s+\d+/i,
+    /^[零一二三四五六七八九十]+[、，,\s]/,
+    /^（[零一二三四五六七八九十\d]+）/,
+  ];
+  for(const line of lines){
+    const trimmed=line.trim();
+    if(trimmed.length<50){
+      for(const pat of patterns){
+        if(pat.test(trimmed)){
+          chapters.push({title:trimmed.substring(0,40), pos:charPos});
+          break;
+        }
+      }
+    }
+    charPos+=line.length+1;
+  }
+  // 如果没找到章节，尝试找短行作为标记
+  if(chapters.length===0){
+    charPos=0;
+    for(const line of lines){
+      const t=line.trim();
+      if(t.length>2&&t.length<30&&!t.startsWith('"')&&!t.startsWith('"')){
+        chapters.push({title:t,pos:charPos});
+      }
+      charPos+=line.length+1;
+    }
+    // 太多就只保留部分
+    if(chapters.length>30) chapters.length=0;
+  }
+  return chapters;
+}
+
+// ============================================================
+// 替换引擎 (密度大幅提高)
+// ============================================================
+function processText(rawText, opts={}){
+  const density=opts.density||'normal';
+  const levels=opts.levels||[1,2,3,4];
+  const distMap={light:80, normal:40, dense:18};
+  const targetDist=distMap[density]||60;
+
+  const lines=rawText.split('\n');
+  const chapters=parseTOC(rawText);
+  const chapterPositions=new Set(chapters.map(c=>c.pos));
+  const result=[]; let globalPos=0, lastReplacePos=-999;
+
+  for(const line of lines){
+    const trimmed=line.trim();
+    if(!trimmed){ result.push(''); globalPos++; continue; }
+
+    // 检查是否是章节标题
+    let isChapterTitle=false;
+    for(const ch of chapters){
+      if(Math.abs(globalPos-ch.pos)<5){ isChapterTitle=true; break; }
+    }
+
+    if(isChapterTitle){
+      result.push(`<div class="chap-title" data-pos="${globalPos}">${escapeHTML(trimmed)}</div>`);
+      globalPos+=line.length+1; continue;
+    }
+
+    if(trimmed.length<4){ result.push(`<p>${escapeHTML(trimmed)}</p>`); globalPos+=line.length+1; continue; }
+
+    const tokens=segmentSentence(trimmed);
+    const replaceable=tokens.filter(t=>t.entry&&levels.includes(t.entry[3])&&checkContext(trimmed,t.entry,t.start,t.end));
+    const selected=new Set();
+    for(const t of replaceable){
+      if(globalPos+t.start-lastReplacePos>=targetDist){
+        selected.add(t.start); lastReplacePos=globalPos+t.start;
+      }
+    }
+
+    let html='', lastEnd=0;
+    for(const t of tokens){
+      if(t.start>lastEnd) html+=escapeHTML(trimmed.substring(lastEnd,t.start));
+      if(t.entry&&selected.has(t.start)){
+        const [cn,en,pos,lvl]=t.entry;
+        const known=state.knownWords.has(en.toLowerCase())?' known':'';
+        if(lvl===4){
+          html+=`<span class="expr-block"><span class="vocab-word${known}" data-word="${escapeAttr(en)}" data-chinese="${escapeAttr(cn)}" data-pos="phrase" data-lvl="4">${escapeHTML(en)}</span><span class="expr-hint">←${escapeHTML(cn)}</span></span>`;
+        } else {
+          html+=`<span class="vocab-word${known}" data-word="${escapeAttr(en)}" data-chinese="${escapeAttr(cn)}" data-pos="${escapeAttr(pos)}" data-lvl="${lvl}">${escapeHTML(en)}</span>`;
+        }
+      } else if(t.entry){
+        html+=escapeHTML(t.text);
+      } else {
+        html+=escapeHTML(t.text);
+      }
+      lastEnd=t.end;
+    }
+    if(lastEnd<trimmed.length) html+=escapeHTML(trimmed.substring(lastEnd));
+    result.push(`<p data-pos="${globalPos}">${html}</p>`);
+    globalPos+=line.length+1;
+  }
+  return {html:result.join('\n'), chapters};
+}
+
+function escapeHTML(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function escapeAttr(s){return s.replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+// ============================================================
+// 词典API
+// ============================================================
+const WORD_CACHE=new Map();
+async function fetchWordDefinition(word){
+  const key=word.toLowerCase().trim();
+  if(WORD_CACHE.has(key)) return WORD_CACHE.get(key);
+  try{
+    const r=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(key)}`);
+    if(!r.ok) throw new Error('');
+    const d=await r.json(), e=d[0];
+    const phon=e.phonetic||(e.phonetics?.find(p=>p.text)?.text)||'';
+    const m=e.meanings?.[0];
+    const defs=m?.definitions?.slice(0,3).map(x=>({def:x.definition,ex:x.example||''}))||[];
+    const res={word:e.word,phonetic:phon,pos:m?.partOfSpeech||'',definitions:defs,found:true};
+    WORD_CACHE.set(key,res); return res;
+  }catch(e){
+    const res={word:key,phonetic:'',pos:'',definitions:[],found:false};
+    WORD_CACHE.set(key,res); return res;
+  }
+}
+
+// ============================================================
+// IndexedDB
+// ============================================================
+const DB_NAME='NovelEngV3', DB_VER=1; let db=null;
+function openDB(){return new Promise((rv,rj)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{const d=e.target.result;['books','settings','progress','knownWords'].forEach(s=>{if(!d.objectStoreNames.contains(s)){const o=d.createObjectStore(s,s==='books'?{keyPath:'id',autoIncrement:true}:s==='settings'?{keyPath:'key'}:s==='progress'?{keyPath:'bookId'}:{keyPath:'word'});if(s==='books') o.createIndex('title','title',{unique:false});}})};r.onsuccess=e=>{db=e.target.result;rv(db)};r.onerror=()=>rj(r.error);});}
+async function ensureDB(){if(!db){db=await openDB();} return db;}
+function dbAct(s,mode,data,key){return new Promise(async(rv,rj)=>{try{await ensureDB();const t=db.transaction(s,mode),o=t.objectStore(s);let q;if(data!==undefined&&key!==undefined) q=o.put(data,key);else if(data!==undefined) q=mode==='readwrite'?o.put(data):o.add(data);else if(key!==undefined) q=o.get(key);else q=o.getAll();q.onsuccess=()=>rv(q.result);q.onerror=()=>rj(q.error);}catch(e){rj(e);}});}
+const dbPut=(s,d)=>dbAct(s,'readwrite',d); const dbGetAll=s=>dbAct(s,'readonly'); const dbGet=(s,k)=>dbAct(s,'readonly',null,k); const dbAdd=(s,d)=>dbAct(s,'readwrite',d); const dbDel=(s,k)=>dbAct(s,'readwrite',null,k);
+async function loadKnownWords(){const ws=await dbGetAll('knownWords');state.knownWords=new Set(ws.map(w=>w.word));}
+async function saveKnownWord(w){await dbPut('knownWords',{word:w.toLowerCase().trim(),ts:Date.now()});}
+
+// ============================================================
+// 状态
+// ============================================================
+const state={
+  currentBook:null, currentView:'library', viewMode:'processed',
+  settings:{theme:'light',fontSize:17,density:'normal',levels:[1,2,3,4]},
+  processedCache:new Map(), knownWords:new Set(), chapters:[],
+};
+const $=s=>document.querySelector(s);
+const dom={
+  app:$('#app'),headerTitle:$('#headerTitle'),libraryView:$('#libraryView'),libraryEmpty:$('#libraryEmpty'),
+  bookList:$('#bookList'),readerView:$('#readerView'),readerContent:$('#readerContent'),
+  progressText:$('#progressText'),progressFill:$('#progressFill'),progressBar:$('#progressBar'),
+  fileInput:$('#fileInput'),toastContainer:$('#toastContainer'),
+  loadingOverlay:$('#loadingOverlay'),loadingText:$('#loadingText'),loadingSub:$('#loadingSub'),
+  btnTOC:$('#btnTOC'),btnToggleMode:$('#btnToggleMode'),
+};
+
+// ============================================================
+// UI工具
+// ============================================================
+function toast(msg,d=1600){const t=document.createElement('div');t.className='toast';t.textContent=msg;dom.toastContainer.appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.3s';setTimeout(()=>t.remove(),300);},d);}
+function showView(v){
+  state.currentView=v;
+  dom.libraryView.style.display=v==='library'?'':'none';
+  dom.readerView.style.display=v==='reader'?'':'none';
+  dom.headerTitle.textContent=v==='library'?'小说学英语':(state.currentBook?.title||'阅读');
+  dom.btnTOC.style.display=v==='reader'?'':'none';
+  dom.btnToggleMode.style.display=v==='reader'?'':'none';
+}
+function applyTheme(){document.documentElement.setAttribute('data-theme',state.settings.theme);}
+function applyFontSize(){document.documentElement.style.setProperty('--fs',state.settings.fontSize+'px');}
+function applyAll(){applyTheme();applyFontSize();}
+function markAll(en){const l=en.toLowerCase();dom.readerContent.querySelectorAll('.vocab-word').forEach(e=>{if(e.dataset.word.toLowerCase()===l) e.classList.add('known');});}
+
+// ============================================================
+// 阅读进度 (可靠保存/恢复)
+// ============================================================
+function getScrollPercent(){const el=dom.readerContent;if(!el||el.scrollHeight<=el.clientHeight) return 0;return Math.round((el.scrollTop/(el.scrollHeight-el.clientHeight))*100);}
+function setScrollPercent(pct){const el=dom.readerContent;if(!el) return;const max=el.scrollHeight-el.clientHeight;el.scrollTop=(pct/100)*max;updateProgressUI();}
+function updateProgressUI(){const pct=getScrollPercent();dom.progressText.textContent=pct+'%';dom.progressFill.style.width=pct+'%';}
+
+let _saveTimer=null;
+function scheduleSave(){clearTimeout(_saveTimer);_saveTimer=setTimeout(doSaveProgress,500);}
+async function doSaveProgress(){
+  if(!state.currentBook) return;
+  const pct=getScrollPercent();
+  await dbPut('progress',{bookId:state.currentBook.id,percent:pct,updatedAt:Date.now()});
+}
+
+async function restoreProgress(bookId){
+  const saved=await dbGet('progress',bookId);
+  if(saved&&saved.percent>0){
+    // 等待DOM渲染完成
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    setScrollPercent(saved.percent);
+  }
+}
+
+// ============================================================
+// 弹出层
+// ============================================================
+function showWordPopup(wordEl){
+  const en=wordEl.dataset.word, cn=wordEl.dataset.chinese, pos=wordEl.dataset.pos, lvl=wordEl.dataset.lvl;
+  const ln=['','四级中低频','六级核心','医学','地道表达'], ln2=ln[parseInt(lvl)]||'';
+
+  // 提取原句上下文
+  const para=wordEl.closest('p,.chap-title,.expr-block');
+  let ctxSentence='';
+  if(para){
+    const fullText=para.textContent||'';
+    const wordIdx=fullText.indexOf(en);
+    if(wordIdx>=0){
+      // 向前找到句首
+      let start=wordIdx;
+      while(start>0&&!/[。！？\.!\?\n]/.test(fullText[start-1])) start--;
+      // 向后找到句尾
+      let end=wordIdx+en.length;
+      while(end<fullText.length&&!/[。！？\.!\?\n]/.test(fullText[end])) end++;
+      ctxSentence=fullText.substring(start,end).trim();
+    }
+  }
+
+  const ov=document.createElement('div');ov.className='popup-overlay';
+  ov.innerHTML=`<div class="popup-sheet"><div class="popup-handle"></div>
+    <div class="popup-word">${escapeHTML(en)}</div>
+    <div class="popup-phonetic" id="pp">查询中…</div>
+    <div class="popup-original">中文原词：${escapeHTML(cn)}</div>
+    ${ctxSentence?`<div style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin:6px 0;padding:6px 10px;background:var(--bg-alt);border-radius:6px;font-family:var(--font-reading)">📖 ${escapeHTML(ctxSentence)}</div>`:''}
+    <span class="popup-tag">${escapeHTML(pos)}${ln2?' · '+ln2:''}</span>
+    <div class="popup-defs" id="pd">正在查询词典释义…</div>
+    <div class="popup-example" id="pe" style="display:none"></div>
+    <div class="popup-actions">
+      <button class="popup-btn" id="pbk">✓ 标记已知</button>
+      <button class="popup-btn" id="pbBad" style="color:#c0392b;border-color:rgba(192,57,43,0.2)">✗ 词不达意</button>
+      <button class="popup-btn primary" id="pbc">关闭</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+
+  const close=()=>{ov.style.opacity='0';ov.style.transition='opacity 0.12s';ov.querySelector('.popup-sheet').style.transform='translateY(100%)';ov.querySelector('.popup-sheet').style.transition='transform 0.15s ease';setTimeout(()=>ov.remove(),150);};
+  ov.addEventListener('click',e=>{if(e.target===ov)close();});
+  ov.querySelector('#pbc').addEventListener('click',close);
+  ov.querySelector('#pbk').addEventListener('click',async()=>{markAll(en);state.knownWords.add(en.toLowerCase());await saveKnownWord(en);toast('已标记 ✓');close();});
+  ov.querySelector('#pbBad').addEventListener('click',()=>{
+    // 把当前替换恢复为中文原词
+    wordEl.replaceWith(document.createTextNode(cn));
+    toast('已恢复原文，感谢反馈 🙏'); close();
+  });
+
+  fetchWordDefinition(en).then(d=>{
+    if(d.found){
+      ov.querySelector('#pp').textContent=d.phonetic||'';
+      if(d.definitions.length){ov.querySelector('#pd').innerHTML=d.definitions.map(x=>`<div class="di">· ${escapeHTML(x.def)}</div>`).join('');const ex=d.definitions.find(x=>x.ex)?.ex;if(ex){ov.querySelector('#pe').textContent=`"${ex}"`;ov.querySelector('#pe').style.display='';}}else ov.querySelector('#pd').textContent='暂无释义';
+      if(d.pos)ov.querySelector('.popup-tag').textContent=d.pos+(ln2?' · '+ln2:'');
+    }else{ov.querySelector('#pp').textContent='';ov.querySelector('#pd').textContent='词典暂无收录，已显示对应翻译';}
+  });
+}
+
+function showSettings(){
+  const ov=document.createElement('div');ov.className='settings-overlay';
+  ov.innerHTML=`<div class="settings-sheet"><div class="popup-handle"></div>
+    <h3 style="margin-bottom:10px;font-size:15px;font-weight:600">阅读设置</h3>
+    <div class="settings-section"><div class="settings-label">单词密度</div><div class="settings-row">
+      <button class="chip ${state.settings.density==='light'?'active':''}" data-d="light">稀疏</button>
+      <button class="chip ${state.settings.density==='normal'?'active':''}" data-d="normal">适中</button>
+      <button class="chip ${state.settings.density==='dense'?'active':''}" data-d="dense">密集</button>
+    </div></div>
+    <div class="settings-section"><div class="settings-label">词汇范围</div><div class="settings-row">
+      <button class="chip ${state.settings.levels.includes(1)?'active':''}" data-l="1">四级中低频</button>
+      <button class="chip ${state.settings.levels.includes(2)?'active':''}" data-l="2">六级</button>
+      <button class="chip ${state.settings.levels.includes(3)?'active':''}" data-l="3">医学</button>
+      <button class="chip ${state.settings.levels.includes(4)?'active':''}" data-l="4">地道表达</button>
+    </div></div>
+    <button class="popup-btn primary btn-full" id="sc">完成</button></div>`;
+  document.body.appendChild(ov);
+  const close=()=>{ov.style.opacity='0';ov.style.transition='opacity 0.12s';ov.querySelector('.settings-sheet').style.transform='translateY(100%)';ov.querySelector('.settings-sheet').style.transition='transform 0.15s ease';setTimeout(()=>ov.remove(),150);};
+  ov.addEventListener('click',e=>{if(e.target===ov)close();});
+  ov.querySelectorAll('[data-d]').forEach(b=>b.addEventListener('click',()=>{state.settings.density=b.dataset.d;ov.querySelectorAll('[data-d]').forEach(x=>x.classList.remove('active'));b.classList.add('active');reprocess();saveSettings();}));
+  ov.querySelectorAll('[data-l]').forEach(b=>b.addEventListener('click',()=>{const l=parseInt(b.dataset.l),i=state.settings.levels.indexOf(l);if(i>=0){if(state.settings.levels.length>1){state.settings.levels.splice(i,1);b.classList.remove('active');}}else{state.settings.levels.push(l);state.settings.levels.sort();b.classList.add('active');}reprocess();saveSettings();}));
+  ov.querySelector('#sc').addEventListener('click',close);
+}
+
+// ============================================================
+// 目录面板
+// ============================================================
+function showTOC(){
+  if(!state.chapters.length){toast('未检测到章节目录');return;}
+  const ov=document.createElement('div');ov.className='toc-overlay';
+  const curPct=getScrollPercent();
+  const el=dom.readerContent; const total=Math.max(el.scrollHeight-el.clientHeight,1);
+  const curPos=el.scrollTop;
+
+  let curIdx=-1;
+  for(let i=state.chapters.length-1;i>=0;i--){if(state.chapters[i].pos<=curPos){curIdx=i;break;}}
+
+  ov.innerHTML=`<div class="toc-drawer">
+    <h3>目录 (${state.chapters.length}章)</h3>
+    ${state.chapters.map((c,i)=>`<button class="toc-item${i===curIdx?' toc-current':''}" data-idx="${i}">${escapeHTML(c.title)}</button>`).join('')}
+    </div>`;
+  document.body.appendChild(ov);
+
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  ov.querySelectorAll('.toc-item').forEach(b=>b.addEventListener('click',()=>{
+    const idx=parseInt(b.dataset.idx);
+    // 查找对应段落在DOM中的位置
+    const targetPos=state.chapters[idx].pos;
+    const paras=dom.readerContent.querySelectorAll('p,.chap-title');
+    for(const p of paras){
+      const dp=parseInt(p.dataset?.pos);
+      if(dp!==undefined&&dp>=targetPos){
+        p.scrollIntoView({behavior:'smooth',block:'start'});
+        break;
+      }
+    }
+    setTimeout(()=>ov.remove(),300);
+  }));
+}
+
+// ============================================================
+// 切换原文/学习
+// ============================================================
+function toggleViewMode(){
+  if(!state.currentBook) return;
+  const scrollPct=getScrollPercent();
+  if(state.viewMode==='processed'){
+    state.viewMode='original';
+    const paras=state.currentBook.content.split('\n').filter(p=>p.trim().length>2);
+    const chapters=state.chapters;
+    const chapPositions=new Set(chapters.map(c=>c.pos));
+    let gpos=0;
+    const html=paras.map(p=>{
+      const t=p.trim(); if(!t){gpos++; return '';}
+      let isChap=false;
+      for(const ch of chapters){if(Math.abs(gpos-ch.pos)<5){isChap=true;break;}}
+      const r=isChap?`<div class="chap-title" data-pos="${gpos}">${escapeHTML(t)}</div>`:`<p data-pos="${gpos}">${escapeHTML(t)}</p>`;
+      gpos+=p.length+1; return r;
+    }).join('\n');
+    dom.readerContent.innerHTML=html;
+    dom.btnToggleMode.textContent='学习';dom.btnToggleMode.classList.add('active');
+  } else {
+    state.viewMode='processed';
+    const cached=state.processedCache.get(state.currentBook.id);
+    dom.readerContent.innerHTML=cached.html;
+    dom.btnToggleMode.textContent='原文';dom.btnToggleMode.classList.remove('active');
+  }
+  requestAnimationFrame(()=>requestAnimationFrame(()=>setScrollPercent(scrollPct)));
+}
+
+// ============================================================
+// 书籍操作
+// ============================================================
+async function reprocess(){
+  if(!state.currentBook) return;
+  const scrollPct=getScrollPercent();
+  try{
+    const result=processText(state.currentBook.content,{density:state.settings.density,levels:state.settings.levels});
+    state.processedCache.set(state.currentBook.id,result);
+  }catch(e){console.error(e);toast('处理出错:'+e.message);return;}
+  state.chapters=result.chapters;
+  if(state.viewMode==='processed'){dom.readerContent.innerHTML=result.html;requestAnimationFrame(()=>requestAnimationFrame(()=>setScrollPercent(scrollPct)));}
+}
+
+async function openBook(book){
+  await doSaveProgress(); // 保存上一本书的进度
+  state.currentBook=book; state.viewMode='processed';
+  dom.btnToggleMode.textContent='原文';dom.btnToggleMode.classList.remove('active');
+
+  if(!state.processedCache.has(book.id)){
+    dom.loadingText.textContent='正在嵌入单词…';dom.loadingSub.textContent=book.title;
+    dom.loadingOverlay.style.display='';await new Promise(r=>requestAnimationFrame(r));
+    try{
+      const t0=performance.now();
+      const result=processText(book.content,{density:state.settings.density,levels:state.settings.levels});
+      console.log('Processed in',Math.round(performance.now()-t0),'ms');
+      state.processedCache.set(book.id,result);
+    }catch(e){
+      console.error('Process error:',e);
+      toast('处理失败: '+e.message);
+    }
+    dom.loadingOverlay.style.display='none';
+  }
+  const cached=state.processedCache.get(book.id);
+  state.chapters=cached.chapters;
+  showView('reader');
+  dom.readerContent.innerHTML=cached.html;
+  dom.headerTitle.textContent=book.title;
+
+  // 浏览器历史：推入阅读状态，拦截系统返回键
+  history.pushState({view:'reader',bookId:book.id}, '', '#book-'+book.id);
+
+  // 恢复进度
+  await restoreProgress(book.id);
+  updateProgressUI();
+}
+
+async function importBook(file){
+  if(!file.name.toLowerCase().match(/\.(txt|text)$/)){toast('请选择TXT文件');return;}
+  dom.loadingText.textContent='正在解析文件…';dom.loadingSub.textContent=file.name;
+  dom.loadingOverlay.style.display='';
+  await new Promise(r=>requestAnimationFrame(r));
+
+  try{
+    const buf=await file.arrayBuffer();
+    const{text:content,encoding}=detectEncoding(buf);
+    const title=file.name.replace(/\.(txt|text)$/i,'');
+    const book={title,content,createdAt:Date.now(),fileSize:file.size,encoding};
+    const id=await dbAdd('books',book);book.id=id;
+
+    dom.loadingText.textContent='正在嵌入单词('+(content.length/1000).toFixed(0)+'k字)…';
+    dom.loadingSub.textContent='词典2000条，智能匹配中';
+    await new Promise(r=>requestAnimationFrame(r));
+
+    const t0=performance.now();
+    const result=processText(content,{density:state.settings.density,levels:state.settings.levels});
+    const elapsed=Math.round(performance.now()-t0);
+
+    state.processedCache.set(id,result);
+    dom.loadingOverlay.style.display='none';
+    toast(`导入成功 · ${result.chapters.length||0}章 · ${(elapsed/1000).toFixed(1)}秒${encoding!=='utf-8'?' · '+encoding.toUpperCase()+'':''}`);
+    refreshLibrary();openBook(book);
+  }catch(e){
+    dom.loadingOverlay.style.display='none';
+    console.error('Import error:',e);
+    toast('导入失败: '+e.message);
+  }
+}
+
+async function refreshLibrary(){
+  const books=await dbGetAll('books');
+  if(!books.length){dom.libraryEmpty.style.display='';dom.bookList.style.display='none';return;}
+  dom.libraryEmpty.style.display='none';dom.bookList.style.display='';
+  dom.bookList.innerHTML=books.sort((a,b)=>b.createdAt-a.createdAt).map(b=>`<div class="book-card" data-id="${b.id}">
+    <span class="icon">📖</span><div class="info"><div class="t">${escapeHTML(b.title)}</div><div class="m">${new Date(b.createdAt).toLocaleDateString('zh-CN')} · ${(b.fileSize/1024).toFixed(1)}KB${b.encoding&&b.encoding!=='utf-8'?' · '+b.encoding.toUpperCase():''}</div></div>
+    <span class="pct" data-bid="${b.id}">—</span><button class="del" data-del="${b.id}">✕</button></div>`).join('');
+  dom.bookList.querySelectorAll('.book-card').forEach(c=>c.addEventListener('click',async e=>{if(e.target.closest('.del'))return;const b=books.find(x=>x.id===parseInt(c.dataset.id));if(b)openBook(b);}));
+  dom.bookList.querySelectorAll('.del').forEach(b=>b.addEventListener('click',async e=>{e.stopPropagation();const id=parseInt(b.dataset.del);if(confirm('确定删除？')){await dbDel('books',id);await dbDel('progress',id);state.processedCache.delete(id);if(state.currentBook?.id===id){state.currentBook=null;showView('library');}refreshLibrary();toast('已删除');}}));
+  for(const b of books){const p=await dbGet('progress',b.id);const el=dom.bookList.querySelector(`[data-bid="${b.id}"]`);if(el&&p)el.textContent=p.percent+'%';}
+}
+
+async function saveSettings(){await dbPut('settings',{key:'app',value:JSON.stringify(state.settings)});}
+async function loadSettings(){const d=await dbGet('settings','app');if(d){try{Object.assign(state.settings,JSON.parse(d.value));}catch(e){}}applyAll();}
+
+// ============================================================
+// 初始化
+// ============================================================
+async function init(){
+  // 初始化数据库（失败不阻塞）
+  try{ db=await openDB(); await loadSettings(); await loadKnownWords(); await refreshLibrary(); }
+  catch(e){ console.warn('DB init issue:',e.message); }
+
+  // 注册所有事件监听
+  $('#btnImport').addEventListener('click',()=>dom.fileInput.click());
+  $('#btnImportMain').addEventListener('click',()=>dom.fileInput.click());
+  dom.fileInput.addEventListener('change',e=>{const f=e.target.files[0];if(f)importBook(f);dom.fileInput.value='';});
+  $('#btnSettings').addEventListener('click',showSettings);
+  $('#btnTheme').addEventListener('click',()=>{state.settings.theme=state.settings.theme==='light'?'dark':'light';applyTheme();saveSettings();});
+  $('#btnTOC').addEventListener('click',showTOC);
+  $('#btnToggleMode').addEventListener('click',toggleViewMode);
+  $('#btnBack').addEventListener('click',async()=>{
+    await doSaveProgress();
+    state.currentBook=null;
+    showView('library');
+    refreshLibrary();
+    history.replaceState({view:'library'}, '', '#');
+  });
+  $('#btnFontDown').addEventListener('click',()=>{if(state.settings.fontSize>13){state.settings.fontSize--;applyFontSize();saveSettings();}});
+  $('#btnFontUp').addEventListener('click',()=>{if(state.settings.fontSize<26){state.settings.fontSize++;applyFontSize();saveSettings();}});
+
+  dom.readerContent.addEventListener('click',e=>{const w=e.target.closest('.vocab-word');if(w){e.stopPropagation();showWordPopup(w);}});
+  dom.readerContent.addEventListener('scroll',()=>{updateProgressUI();scheduleSave();},{passive:true});
+
+  // 进度条点击
+  dom.progressBar.addEventListener('click',e=>{const r=(e.clientX-dom.progressBar.getBoundingClientRect().left)/dom.progressBar.clientWidth;dom.readerContent.scrollTop=r*(dom.readerContent.scrollHeight-dom.readerContent.clientHeight);});
+
+  // 键盘
+  document.addEventListener('keydown',e=>{
+    if(state.currentView!=='reader')return;const el=dom.readerContent,h=el.clientHeight*0.8;
+    if(['ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();el.scrollBy({top:h,behavior:'smooth'});}
+    else if(['ArrowUp','PageUp'].includes(e.key)){e.preventDefault();el.scrollBy({top:-h,behavior:'smooth'});}
+    else if(e.key==='ArrowLeft'){e.preventDefault();el.scrollBy({top:-h,behavior:'smooth'});}
+    else if(e.key==='ArrowRight'){e.preventDefault();el.scrollBy({top:h,behavior:'smooth'});}
+    else if(e.key==='Escape'){document.querySelectorAll('.popup-overlay,.settings-overlay,.toc-overlay').forEach(o=>o.remove());}
+  });
+
+  // 触摸翻页 (使用pointer事件避免click冲突)
+  let tsX=0,tsY=0,tsT=0;
+  dom.readerContent.addEventListener('touchstart',e=>{tsX=e.touches[0].clientX;tsY=e.touches[0].clientY;tsT=Date.now();},{passive:true});
+  dom.readerContent.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-tsX, dy=e.changedTouches[0].clientY-tsY, dt=Date.now()-tsT;
+    // 快速水平滑动
+    if(dt<400&&Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.3){
+      const h=dom.readerContent.clientHeight*0.8;
+      dom.readerContent.scrollBy({top:dx<0?h:-h,behavior:'smooth'});
+    }
+  });
+
+  // 长按标记 (不与点击冲突)
+  let lpTimer=null,lpTarget=null;
+  dom.readerContent.addEventListener('touchstart',e=>{
+    const w=e.target.closest('.vocab-word');if(!w)return;
+    lpTarget=w;lpTimer=setTimeout(async()=>{const en=w.dataset.word.toLowerCase();markAll(en);state.knownWords.add(en);await saveKnownWord(en);toast('已标记 ✓');if(navigator.vibrate)navigator.vibrate(10);lpTimer=null;lpTarget=null;},700);
+  },{passive:true});
+  const clearLp=()=>{if(lpTimer){clearTimeout(lpTimer);lpTimer=null;lpTarget=null;}};
+  dom.readerContent.addEventListener('touchmove',clearLp,{passive:true});
+  dom.readerContent.addEventListener('touchend',clearLp,{passive:true});
+  dom.readerContent.addEventListener('touchcancel',clearLp,{passive:true});
+
+  // 离开页面前保存
+  window.addEventListener('beforeunload',()=>{doSaveProgress();saveSettings();});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)doSaveProgress();});
+
+  // 拦截浏览器/系统返回键：阅读页时回到书库，书库时才退出
+  history.replaceState({view:'library'}, '', '#');
+  window.addEventListener('popstate', e => {
+    if(state.currentView==='reader'){
+      // 用户按系统返回 → 回书库而非退出网页
+      doSaveProgress();
+      state.currentBook=null;
+      showView('library');
+      refreshLibrary();
+      // replaceState保持历史干净，下次返回才真正退出
+      history.replaceState({view:'library'}, '', '#');
+    }
+    // currentView是library时，popstate正常退出网页
+  });
+
+  console.log('📚 v3 — '+DICT.length+'词条 · '+state.knownWords.size+'已知 · 目录'+state.chapters.length+'章');
+}
+
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
