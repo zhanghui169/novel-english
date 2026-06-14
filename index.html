@@ -2019,9 +2019,11 @@ async function init(){
   // 初始化数据库——每个步骤独立，互不阻塞
   try { db = await openDB(); } catch(e) { console.warn('DB open issue:', e.message); db = null; }
 
-  // 有DB才加载数据，但不阻塞事件注册
+  // loadSettings 始终执行（localStorage 优先，不依赖 DB）
+  try { await loadSettings(); } catch(e) { console.warn('Settings load issue:', e.message); }
+
+  // 这些依赖 DB，DB 不可用时跳过
   if (db) {
-    try { await loadSettings(); } catch(e) { console.warn('Settings load issue:', e.message); }
     try { await loadKnownWords(); } catch(e) { console.warn('KnownWords load issue:', e.message); }
     try { await loadBadWords(); } catch(e) { console.warn('BadWords load issue:', e.message); }
   }
