@@ -62,6 +62,7 @@ body{
 }
 .btn-on.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 .btn-on:active{opacity:0.8}
+#btnBookmark.active{color:#f59e0b}
 /* Library */
 .library{flex:1;padding:16px}
 .library-empty{
@@ -274,6 +275,7 @@ body{
       <button class="btn" id="btnBack" title="书库">←</button>
       <span class="progress-text" id="progressText">0%</span>
       <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+      <button class="btn" id="btnBookmark" title="书签">🔖</button>
       <button class="btn" id="btnFontDown" title="缩小">A⁻</button>
       <button class="btn" id="btnFontUp" title="放大">A⁺</button>
     </div>
@@ -1521,7 +1523,7 @@ const dom={
   progressText:$('#progressText'),progressFill:$('#progressFill'),progressBar:$('#progressBar'),
   fileInput:$('#fileInput'),toastContainer:$('#toastContainer'),
   loadingOverlay:$('#loadingOverlay'),loadingText:$('#loadingText'),loadingSub:$('#loadingSub'),
-  btnTOC:$('#btnTOC'),btnToggleMode:$('#btnToggleMode'),
+  btnTOC:$('#btnTOC'),btnToggleMode:$('#btnToggleMode'),btnBookmark:$('#btnBookmark'),
 };
 
 // ============================================================
@@ -1569,15 +1571,25 @@ function stopPeriodicSave(){
 }
 
 async function restoreProgress(bookId){
+  // 优先检查书签
   let percent = 0;
-  try {
-    const ls = localStorage.getItem('nv_eng_progress_'+bookId);
-    if(ls){ const v = JSON.parse(ls); percent = v.pct || 0; }
-  } catch(e) {}
-  try {
-    const saved = await dbGet('progress', bookId);
-    if(saved && saved.percent > percent) percent = saved.percent;
-  } catch(e) {}
+  let fromBookmark = false;
+  const bm = getBookmark(bookId);
+  if(bm && bm.percent > 0){
+    percent = bm.percent;
+    fromBookmark = true;
+  }
+  // 书签不存在时，回退到自动保存的进度
+  if(!fromBookmark){
+    try {
+      const ls = localStorage.getItem('nv_eng_progress_'+bookId);
+      if(ls){ const v = JSON.parse(ls); percent = v.pct || 0; }
+    } catch(e) {}
+    try {
+      const saved = await dbGet('progress', bookId);
+      if(saved && saved.percent > percent) percent = saved.percent;
+    } catch(e) {}
+  }
   if(percent > 0){
     // 等待 DOM 布局完成（长篇小说需要更长时间）
     const el = dom.readerContent;
@@ -1589,6 +1601,28 @@ async function restoreProgress(bookId){
     setScrollPercent(percent);
   }
   applyFontSize();
+}
+
+// ============================================================
+// 书签功能（手动设置，优先于自动进度）
+// ============================================================
+function getBookmark(bookId){
+  try{const raw=localStorage.getItem('nv_eng_bookmark_'+bookId);return raw?JSON.parse(raw):null;}catch(e){return null;}
+}
+function saveBookmark(bookId,percent){
+  const data={percent,updatedAt:Date.now()};
+  localStorage.setItem('nv_eng_bookmark_'+bookId,JSON.stringify(data));
+}
+function removeBookmark(bookId){
+  localStorage.removeItem('nv_eng_bookmark_'+bookId);
+}
+function updateBookmarkUI(){
+  if(!state.currentBook)return;
+  const bm=getBookmark(state.currentBook.id);
+  const btn=document.getElementById('btnBookmark');
+  if(!btn)return;
+  if(bm){btn.classList.add('active');btn.title='书签(已设置)';}
+  else{btn.classList.remove('active');btn.title='书签';}
 }
 
 // ============================================================
@@ -1932,9 +1966,10 @@ async function openBook(book){
   // 浏览器历史：推入阅读状态，拦截系统返回键
   history.pushState({view:'reader',bookId:book.id}, '', '#book-'+book.id);
 
-  // 恢复进度
+  // 恢复进度（书签优先）
   await restoreProgress(book.id);
   updateProgressUI();
+  updateBookmarkUI();
   startPeriodicSave();
 }
 
@@ -2038,6 +2073,21 @@ async function init(){
   $('#btnTheme').addEventListener('click',async()=>{state.settings.theme=state.settings.theme==='light'?'dark':'light';applyTheme();await saveSettings();});
   $('#btnTOC').addEventListener('click',showTOC);
   $('#btnToggleMode').addEventListener('click',toggleViewMode);
+  // 书签按钮：点击设置/取消书签
+  document.getElementById('btnBookmark').addEventListener('click',()=>{
+    if(!state.currentBook) return;
+    const bm=getBookmark(state.currentBook.id);
+    if(bm){
+      removeBookmark(state.currentBook.id);
+      updateBookmarkUI();
+      toast('书签已移除');
+    }else{
+      const pct=getScrollPercent();
+      saveBookmark(state.currentBook.id,pct);
+      updateBookmarkUI();
+      toast('🔖 书签已设置');
+    }
+  });
   $('#btnBack').addEventListener('click',async()=>{
     stopPeriodicSave();
     await doSaveProgress();
@@ -2127,7 +2177,7 @@ async function init(){
     });
   }
 
-  console.log('📚 v4 — '+DICT.length+'词条 · '+state.knownWords.size+'已知');
+  console.log('📚 v5 — '+DICT.length+'词条 · '+state.knownWords.size+'已知');
 
   // 自动恢复上次阅读的书籍
   try {
