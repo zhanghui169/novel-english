@@ -1548,25 +1548,45 @@ function getScrollPercent(){const el=dom.readerContent;if(!el||el.scrollHeight<=
 function setScrollPercent(pct){const el=dom.readerContent;if(!el) return;const max=el.scrollHeight-el.clientHeight;el.scrollTop=(pct/100)*max;updateProgressUI();}
 function updateProgressUI(){const pct=getScrollPercent();dom.progressText.textContent=pct+'%';dom.progressFill.style.width=pct+'%';}
 
-let _saveTimer=null;
-function scheduleSave(){clearTimeout(_saveTimer);_saveTimer=setTimeout(doSaveProgress,500);}
+let _saveTimer=null, _periodicTimer=null;
+function scheduleSave(){clearTimeout(_saveTimer);_saveTimer=setTimeout(doSaveProgress,200);}
 async function doSaveProgress(){
   if(!state.currentBook) return;
-  const pct=getScrollPercent();
-  await dbPut('progress',{bookId:state.currentBook.id,percent:pct,updatedAt:Date.now()});
+  try {
+    const pct=getScrollPercent();
+    // 同步写 localStorage 兜底（页面关闭也能存下）
+    try { localStorage.setItem('nv_eng_progress_'+state.currentBook.id, JSON.stringify({pct,ts:Date.now()})); } catch(le) {}
+    // 异步写 IndexedDB
+    await dbPut('progress',{bookId:state.currentBook.id,percent:pct,updatedAt:Date.now()});
+  } catch(e) { console.warn('saveProgress:', e.message); }
+}
+function startPeriodicSave(){
+  stopPeriodicSave();
+  _periodicTimer = setInterval(doSaveProgress, 8000);
+}
+function stopPeriodicSave(){
+  if(_periodicTimer){ clearInterval(_periodicTimer); _periodicTimer = null; }
 }
 
 async function restoreProgress(bookId){
-  const saved=await dbGet('progress',bookId);
-  if(saved&&saved.percent>0){
-    // 等待DOM渲染完成——多次重试确保内容已布局
+  let percent = 0;
+  // 先查 localStorage（可能比IndexedDB更新）
+  try {
+    const ls = localStorage.getItem('nv_eng_progress_'+bookId);
+    if(ls){ const v = JSON.parse(ls); percent = v.pct || 0; }
+  } catch(e) {}
+  // IndexedDB 补查
+  try {
+    const saved = await dbGet('progress', bookId);
+    if(saved && saved.percent > percent) percent = saved.percent;
+  } catch(e) {}
+  if(percent > 0){
     for(let retry=0;retry<5;retry++){
       await new Promise(r=>setTimeout(r, 100 + retry*100));
       if(dom.readerContent.scrollHeight > dom.readerContent.clientHeight + 10) break;
     }
-    setScrollPercent(saved.percent);
+    setScrollPercent(percent);
   }
-  // 恢复上次字体大小（已在loadSettings中applyAll，此处二次确保）
   applyFontSize();
 }
 
@@ -1912,6 +1932,7 @@ async function openBook(book){
   // 恢复进度
   await restoreProgress(book.id);
   updateProgressUI();
+  startPeriodicSave();
 }
 
 async function importBook(file){
@@ -1966,8 +1987,27 @@ async function refreshLibrary(){
   for(const b of books){const p=await dbGet('progress',b.id);const el=dom.bookList.querySelector(`[data-bid="${b.id}"]`);if(el&&p)el.textContent=p.percent+'%';}
 }
 
-async function saveSettings(){await dbPut('settings',{key:'app',value:JSON.stringify(state.settings)});}
-async function loadSettings(){const d=await dbGet('settings','app');if(d){try{Object.assign(state.settings,JSON.parse(d.value));}catch(e){}}applyAll();}
+async function saveSettings(){
+  try {
+    // 同步写 localStorage 兜底（关页面也能存下）
+    localStorage.setItem('nv_eng_settings', JSON.stringify(state.settings));
+    // 异步写 IndexedDB
+    await dbPut('settings',{key:'app',value:JSON.stringify(state.settings)});
+  } catch(e) { console.warn('saveSettings:', e.message); }
+}
+async function loadSettings(){
+  // 先尝试 IndexedDB
+  try {
+    const d = db ? await dbGet('settings','app') : null;
+    if(d){ try{Object.assign(state.settings,JSON.parse(d.value));}catch(e){} }
+  } catch(e) {}
+  // localStorage 兜底（比 IndexedDB 更新）
+  try {
+    const ls = localStorage.getItem('nv_eng_settings');
+    if(ls){ const v = JSON.parse(ls); Object.assign(state.settings, v); }
+  } catch(e) {}
+  applyAll();
+}
 
 // ============================================================
 // 初始化
@@ -1990,18 +2030,19 @@ async function init(){
   $('#btnImportMain').addEventListener('click',()=>dom.fileInput.click());
   dom.fileInput.addEventListener('change',e=>{const f=e.target.files[0];if(f)importBook(f);dom.fileInput.value='';});
   $('#btnSettings').addEventListener('click',showSettings);
-  $('#btnTheme').addEventListener('click',()=>{state.settings.theme=state.settings.theme==='light'?'dark':'light';applyTheme();saveSettings();});
+  $('#btnTheme').addEventListener('click',async()=>{state.settings.theme=state.settings.theme==='light'?'dark':'light';applyTheme();await saveSettings();});
   $('#btnTOC').addEventListener('click',showTOC);
   $('#btnToggleMode').addEventListener('click',toggleViewMode);
   $('#btnBack').addEventListener('click',async()=>{
+    stopPeriodicSave();
     await doSaveProgress();
     state.currentBook=null;
     showView('library');
     refreshLibrary();
     history.replaceState({view:'library'}, '', '#');
   });
-  $('#btnFontDown').addEventListener('click',()=>{if(state.settings.fontSize>13){state.settings.fontSize--;applyFontSize();saveSettings();}});
-  $('#btnFontUp').addEventListener('click',()=>{if(state.settings.fontSize<26){state.settings.fontSize++;applyFontSize();saveSettings();}});
+  $('#btnFontDown').addEventListener('click',async()=>{if(state.settings.fontSize>13){state.settings.fontSize--;applyFontSize();await saveSettings();}});
+  $('#btnFontUp').addEventListener('click',async()=>{if(state.settings.fontSize<26){state.settings.fontSize++;applyFontSize();await saveSettings();}});
 
   dom.readerContent.addEventListener('click',e=>{const w=e.target.closest('.vocab-word');if(w){e.stopPropagation();showWordPopup(w);}});
   dom.readerContent.addEventListener('scroll',()=>{updateProgressUI();scheduleSave();},{passive:true});
@@ -2042,23 +2083,32 @@ async function init(){
   dom.readerContent.addEventListener('touchend',clearLp,{passive:true});
   dom.readerContent.addEventListener('touchcancel',clearLp,{passive:true});
 
-  // 离开页面前保存
-  window.addEventListener('beforeunload',()=>{doSaveProgress();saveSettings();});
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)doSaveProgress();});
+  // 离开页面前保存（visibilitychange 比 beforeunload 更可靠）
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){
+      stopPeriodicSave();
+      doSaveProgress();
+      saveSettings();
+    }
+  });
+  window.addEventListener('beforeunload',()=>{
+    stopPeriodicSave();
+    doSaveProgress();
+    saveSettings();
+    // localStorage 已在 doSaveProgress/saveSettings 内同步写入，此处兜底
+  });
 
   // 拦截浏览器/系统返回键：阅读页时回到书库，书库时才退出
   history.replaceState({view:'library'}, '', '#');
-  window.addEventListener('popstate', e => {
+  window.addEventListener('popstate', async e => {
     if(state.currentView==='reader'){
-      // 用户按系统返回 → 回书库而非退出网页
-      doSaveProgress();
+      stopPeriodicSave();
+      await doSaveProgress();
       state.currentBook=null;
       showView('library');
       refreshLibrary();
-      // replaceState保持历史干净，下次返回才真正退出
       history.replaceState({view:'library'}, '', '#');
     }
-    // currentView是library时，popstate正常退出网页
   });
 
   // 注册 Service Worker（离线缓存）
