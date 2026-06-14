@@ -1573,14 +1573,11 @@ function stopPeriodicSave(){
 async function restoreProgress(bookId){
   // 优先检查书签
   let percent = 0;
-  let fromBookmark = false;
   const bm = getBookmark(bookId);
   if(bm && bm.percent > 0){
     percent = bm.percent;
-    fromBookmark = true;
-  }
-  // 书签不存在时，回退到自动保存的进度
-  if(!fromBookmark){
+  } else {
+    // 书签不存在时，回退到自动保存的进度
     try {
       const ls = localStorage.getItem('nv_eng_progress_'+bookId);
       if(ls){ const v = JSON.parse(ls); percent = v.pct || 0; }
@@ -1591,14 +1588,20 @@ async function restoreProgress(bookId){
     } catch(e) {}
   }
   if(percent > 0){
-    // 等待 DOM 布局完成（长篇小说需要更长时间）
     const el = dom.readerContent;
-    for(let retry=0; retry<30; retry++){
-      await new Promise(r => requestAnimationFrame(r));
-      if(el.scrollHeight > el.clientHeight + 50) break; // 内容比视口高50px即可
-      if(retry%2===0) await new Promise(r=>setTimeout(r, 50)); // 每两帧额外等50ms
+    // 用 setTimeout 而非 rAF，确保浏览器已完成绘制再设置滚动位置
+    for(let retry=0; retry<40; retry++){
+      await new Promise(r=>setTimeout(r, 60));
+      if(el.scrollHeight > el.clientHeight + 100) break;
     }
     setScrollPercent(percent);
+    // 二次确认：等一小段时间后检查位置是否真的生效
+    await new Promise(r=>setTimeout(r, 200));
+    const actual = getScrollPercent();
+    if(Math.abs(actual - percent) > 10 && percent > 0 && el.scrollHeight > el.clientHeight){
+      setScrollPercent(percent);
+    }
+    if(bm) toast('🔖 已跳到书签位置 ('+percent+'%)');
   }
   applyFontSize();
 }
@@ -1619,7 +1622,7 @@ function removeBookmark(bookId){
 function updateBookmarkUI(){
   if(!state.currentBook)return;
   const bm=getBookmark(state.currentBook.id);
-  const btn=document.getElementById('btnBookmark');
+  const btn=dom.btnBookmark;
   if(!btn)return;
   if(bm){btn.classList.add('active');btn.title='书签(已设置)';}
   else{btn.classList.remove('active');btn.title='书签';}
@@ -1927,8 +1930,9 @@ function toggleViewMode(){
 async function reprocess(){
   if(!state.currentBook) return;
   const scrollPct=getScrollPercent();
+  let result;
   try{
-    const result=processText(state.currentBook.content,{density:state.settings.density,levels:state.settings.levels});
+    result=processText(state.currentBook.content,{density:state.settings.density,levels:state.settings.levels});
     state.processedCache.set(state.currentBook.id,result);
   }catch(e){console.error(e);toast('处理出错:'+e.message);return;}
   state.chapters=result.chapters;
@@ -2074,7 +2078,7 @@ async function init(){
   $('#btnTOC').addEventListener('click',showTOC);
   $('#btnToggleMode').addEventListener('click',toggleViewMode);
   // 书签按钮：点击设置/取消书签
-  document.getElementById('btnBookmark').addEventListener('click',()=>{
+  dom.btnBookmark.addEventListener('click',()=>{
     if(!state.currentBook) return;
     const bm=getBookmark(state.currentBook.id);
     if(bm){
