@@ -1570,20 +1570,21 @@ function stopPeriodicSave(){
 
 async function restoreProgress(bookId){
   let percent = 0;
-  // 先查 localStorage（可能比IndexedDB更新）
   try {
     const ls = localStorage.getItem('nv_eng_progress_'+bookId);
     if(ls){ const v = JSON.parse(ls); percent = v.pct || 0; }
   } catch(e) {}
-  // IndexedDB 补查
   try {
     const saved = await dbGet('progress', bookId);
     if(saved && saved.percent > percent) percent = saved.percent;
   } catch(e) {}
   if(percent > 0){
-    for(let retry=0;retry<5;retry++){
-      await new Promise(r=>setTimeout(r, 100 + retry*100));
-      if(dom.readerContent.scrollHeight > dom.readerContent.clientHeight + 10) break;
+    // 等待 DOM 布局完成（长篇小说需要更长时间）
+    const el = dom.readerContent;
+    for(let retry=0; retry<30; retry++){
+      await new Promise(r => requestAnimationFrame(r));
+      if(el.scrollHeight > el.clientHeight + 50) break; // 内容比视口高50px即可
+      if(retry%2===0) await new Promise(r=>setTimeout(r, 50)); // 每两帧额外等50ms
     }
     setScrollPercent(percent);
   }
