@@ -174,7 +174,16 @@ body{
 .popup-original{font-size:12px;color:var(--text-secondary);margin-bottom:4px}
 .popup-tag{display:inline-block;padding:2px 8px;background:var(--accent-bg);color:var(--accent);border-radius:10px;font-size:10px;margin-bottom:8px;font-weight:500}
 .popup-defs{font-size:13px;line-height:1.6;color:var(--text);margin-bottom:8px}
-.popup-defs .di{padding:5px 8px;margin-bottom:3px;background:var(--bg-alt);border-radius:6px}
+.popup-chinese-hint{font-size:14px;color:var(--text-tertiary);font-weight:400}
+.popup-ctx{font-size:12px;color:var(--text-secondary);line-height:1.5;margin:6px 0;padding:6px 10px;background:var(--bg-alt);border-radius:6px;font-family:var(--font-reading)}
+.popup-section-label{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-tertiary);margin:10px 0 4px;font-weight:500}
+.popup-concise{font-size:14px;line-height:1.6;color:var(--text);padding:6px 10px;background:var(--accent-bg);border-radius:8px;margin-bottom:2px}
+.concise-pos{font-weight:600;color:var(--accent);font-style:italic}
+.popup-defs .di{padding:6px 10px;margin-bottom:4px;background:var(--bg-alt);border-radius:6px}
+.popup-defs .di-en{font-size:13px;line-height:1.5;color:var(--text);font-weight:500}
+.popup-defs .di-zh{font-size:13px;line-height:1.5;color:var(--accent);margin-top:2px;padding-left:6px;border-left:2px solid var(--accent-light)}
+.popup-defs .di-ex{font-size:12px;color:var(--text-secondary);margin-top:3px;padding-left:6px;border-left:2px solid var(--divider);font-style:italic}
+.popup-defs .di-exZh{font-style:normal;color:var(--accent);margin-left:6px;font-size:11px}
 .popup-example{font-size:11px;color:var(--text-secondary);font-style:italic;padding:4px 0 8px 8px;border-left:2px solid var(--accent-light);margin:4px 0 0 2px}
 .popup-actions{display:flex;gap:8px;margin-top:12px}
 .popup-btn{
@@ -328,7 +337,7 @@ const DICT = [
   ['保守','orthodox','adj',1],['激进','militant','adj',1],
   ['稳定','steadfast','adj',1],['神秘','enigmatic','adj',1],
   // 四级动词
-  ['意识到','discern','v',1],['归类','classify','v',1],['概括','encapsulate','v',1],
+  ['意识到','realize','v',1],['归类','classify','v',1],['概括','encapsulate','v',1],
   ['分析','scrutinize','v',1],['评估','gauge','v',1],['预测','foresee','v',1],
   ['推断','surmise','v',1],['阐明','expound','v',1],['论证','substantiate','v',1],
   ['证实','corroborate','v',1],['否认','repudiate','v',1],['声称','allege','v',1],
@@ -342,7 +351,7 @@ const DICT = [
   ['延续','sustain','v',1],['中断','sever','v',1],['维持','uphold','v',1],
   ['削弱','diminish','v',1],['弥补','redeem','v',1],['替代','displace','v',1],
   ['面临','grapple','v',1],['规避','sidestep','v',1],['反抗','rebel','v',1],
-  ['忍受','endure','v',1],['崩溃','disintegrate','v',1],
+  ['忍受','endure','v',1],['崩溃','collapse','v',1],
   ['反思','ruminate','v',1],['醒悟','disillusion','v',1],
   // 四级副词
   ['本质上','inherently','adv',1],['相对地','proportionally','adv',1],
@@ -1049,7 +1058,7 @@ const DICT = [
   ['宏大','monumental','adj',2],['渺小','infinitesimal','adj',2],['伟大','towering','adj',2],
   ['崇高','lofty','adj',2],['卑微','menial','adj',2],['低贱','ignoble','adj',2],
   ['优先','preferential','adj',2],['次要','ancillary','adj',2],['附带','tangential','adj',2],
-  ['主要','cardinal','adj',2],['根本','elemental','adj',2],['核心','pivotal','adj',2],
+  ['主要','cardinal','adj',2],['根本','fundamental','adj',2],['核心','pivotal','adj',2],
   ['直接','forthright','adj',2],['间接','circuitous','adj',2],['曲折','convoluted','adj',2],
   ['平坦','unimpeded','adj',2],['坎坷','checkered','adj',2],['崎岖','rugged','adj',2],
   ['艰难','grueling','adj',2],['轻松','effortless','adj',2],['容易','facile','adj',2],
@@ -1255,6 +1264,22 @@ const CTX_RULES = {
   '繁荣': {rejectAfter:['的']},                       // 繁荣的=prosperous
   '衰退': {rejectAfter:['了']},                       // 衰退了=declined
   '显著': {rejectAfter:['地']},                       // 显著地=significantly
+  // 新增：防止副词/连词用法的误替换
+  '根本': {rejectAfter:['不','没','是','无','听','看','说','就','也','找']}, // 根本听不见≠elemental
+  '原来': {rejectBefore:['在'], rejectAfter:['如此','是']}, // 原来是=originally
+  '自然': {rejectAfter:['地','而','是']},             // 自然地=naturally
+  '特别': {rejectAfter:['是','地']},                   // 特别是=especially
+  '基本': {rejectAfter:['上','不','没']},             // 基本上=basically
+  '确实': {rejectBefore:['的']},                       // 确实的≠indeed实
+  '绝对': {rejectAfter:['不','是']},                   // 绝对不是=absolutely not
+  '完全': {rejectAfter:['不','没','可以']},           // 完全不=completely not
+  '相当': {rejectAfter:['于','地']},                   // 相当于=equivalent to
+  // 常见的v/n歧义防护
+  '分析': {rejectAfter:['师','员','家']},             // 分析师≠scrutinize
+  '预测': {rejectAfter:['师','模型','结果']},         // 预测师≠foresee
+  '评估': {rejectAfter:['师','报告','标准']},         // 评估师≠gauge
+  '规划': {rejectAfter:['师','局','图']},             // 规划师≠chart
+  '崩溃': {rejectAfter:['感','状态','边缘']},         // 崩溃感≠disintegrate
 };
 
 function checkContext(trimmed, entry, start, end){
@@ -1410,7 +1435,7 @@ function processText(rawText, opts={}){
     if(trimmed.length<4){ result.push(`<p>${escapeHTML(trimmed)}</p>`); globalPos+=line.length+1; continue; }
 
     const tokens=segmentSentence(trimmed);
-    const replaceable=tokens.filter(t=>t.entry&&levels.includes(t.entry[3])&&checkContext(trimmed,t.entry,t.start,t.end));
+    const replaceable=tokens.filter(t=>t.entry&&levels.includes(t.entry[3])&&checkContext(trimmed,t.entry,t.start,t.end)&&!state.badWords.has(t.entry[0]+'|'+t.entry[1].toLowerCase()));
     const selected=new Set();
     for(const t of replaceable){
       if(globalPos+t.start-lastReplacePos>=targetDist){
@@ -1454,7 +1479,7 @@ async function fetchWordDefinition(word){
   const key=word.toLowerCase().trim();
   if(WORD_CACHE.has(key)) return WORD_CACHE.get(key);
   try{
-    const r=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(key)}`);
+    const r=await fetchWithTimeout(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(key)}`, 5000);
     if(!r.ok) throw new Error('');
     const d=await r.json(), e=d[0];
     const phon=e.phonetic||(e.phonetics?.find(p=>p.text)?.text)||'';
@@ -1471,13 +1496,15 @@ async function fetchWordDefinition(word){
 // ============================================================
 // IndexedDB
 // ============================================================
-const DB_NAME='NovelEngV3', DB_VER=1; let db=null;
-function openDB(){return new Promise((rv,rj)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{const d=e.target.result;['books','settings','progress','knownWords'].forEach(s=>{if(!d.objectStoreNames.contains(s)){const o=d.createObjectStore(s,s==='books'?{keyPath:'id',autoIncrement:true}:s==='settings'?{keyPath:'key'}:s==='progress'?{keyPath:'bookId'}:{keyPath:'word'});if(s==='books') o.createIndex('title','title',{unique:false});}})};r.onsuccess=e=>{db=e.target.result;rv(db)};r.onerror=()=>rj(r.error);});}
+const DB_NAME='NovelEngV3', DB_VER=2; let db=null;
+function openDB(){return new Promise((rv,rj)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{const d=e.target.result;['books','settings','progress','knownWords','badWords'].forEach(s=>{if(!d.objectStoreNames.contains(s)){const o=d.createObjectStore(s,s==='books'?{keyPath:'id',autoIncrement:true}:s==='settings'?{keyPath:'key'}:s==='progress'?{keyPath:'bookId'}:s==='badWords'?{keyPath:'word'}:{keyPath:'word'});if(s==='books') o.createIndex('title','title',{unique:false});}})};r.onsuccess=e=>{db=e.target.result;rv(db)};r.onerror=()=>rj(r.error);});}
 async function ensureDB(){if(!db){db=await openDB();} return db;}
 function dbAct(s,mode,data,key){return new Promise(async(rv,rj)=>{try{await ensureDB();const t=db.transaction(s,mode),o=t.objectStore(s);let q;if(data!==undefined&&key!==undefined) q=o.put(data,key);else if(data!==undefined) q=mode==='readwrite'?o.put(data):o.add(data);else if(key!==undefined) q=o.get(key);else q=o.getAll();q.onsuccess=()=>rv(q.result);q.onerror=()=>rj(q.error);}catch(e){rj(e);}});}
 const dbPut=(s,d)=>dbAct(s,'readwrite',d); const dbGetAll=s=>dbAct(s,'readonly'); const dbGet=(s,k)=>dbAct(s,'readonly',null,k); const dbAdd=(s,d)=>dbAct(s,'readwrite',d); const dbDel=(s,k)=>dbAct(s,'readwrite',null,k);
 async function loadKnownWords(){const ws=await dbGetAll('knownWords');state.knownWords=new Set(ws.map(w=>w.word));}
 async function saveKnownWord(w){await dbPut('knownWords',{word:w.toLowerCase().trim(),ts:Date.now()});}
+async function loadBadWords(){const ws=await dbGetAll('badWords');state.badWords=new Set(ws.map(w=>w.word));}
+async function saveBadWord(cn, en){const key=cn+'|'+en.toLowerCase().trim();await dbPut('badWords',{word:key,ts:Date.now()});state.badWords.add(key);}
 
 // ============================================================
 // 状态
@@ -1485,7 +1512,7 @@ async function saveKnownWord(w){await dbPut('knownWords',{word:w.toLowerCase().t
 const state={
   currentBook:null, currentView:'library', viewMode:'processed',
   settings:{theme:'light',fontSize:17,density:'normal',levels:[1,2,3,4]},
-  processedCache:new Map(), knownWords:new Set(), chapters:[],
+  processedCache:new Map(), knownWords:new Set(), badWords:new Set(), chapters:[],
 };
 const $=s=>document.querySelector(s);
 const dom={
@@ -1532,10 +1559,105 @@ async function doSaveProgress(){
 async function restoreProgress(bookId){
   const saved=await dbGet('progress',bookId);
   if(saved&&saved.percent>0){
-    // 等待DOM渲染完成
-    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    // 等待DOM渲染完成——多次重试确保内容已布局
+    for(let retry=0;retry<5;retry++){
+      await new Promise(r=>setTimeout(r, 100 + retry*100));
+      if(dom.readerContent.scrollHeight > dom.readerContent.clientHeight + 10) break;
+    }
     setScrollPercent(saved.percent);
   }
+  // 恢复上次字体大小（已在loadSettings中applyAll，此处二次确保）
+  applyFontSize();
+}
+
+// ============================================================
+// 网络工具：带超时的 fetch
+// ============================================================
+function fetchWithTimeout(url, timeoutMs=5000){
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, {signal: controller.signal}).finally(() => clearTimeout(timer));
+}
+
+// ============================================================
+// 翻译 & 双语词典（多源竞速：谁快用谁）
+// ============================================================
+const TRANS_CACHE = new Map();
+
+// 尝试 Google 翻译（质量好，但国内可能慢/被墙）
+async function tryGoogleTranslate(text){
+  try {
+    const r = await fetchWithTimeout(
+      `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=${encodeURIComponent(text)}`, 3000);
+    if(!r.ok) return null;
+    const d = await r.json();
+    const zh = (d[0]||[]).map(x=>x[0]).join('');
+    return (zh && zh !== text) ? zh : null;
+  } catch(e) { return null; }
+}
+
+// 尝试 MyMemory（国内通常能访问，但翻译质量一般）
+async function tryMyMemoryTranslate(text){
+  try {
+    const r = await fetchWithTimeout(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|zh-CN`, 3000);
+    if(!r.ok) return null;
+    const d = await r.json();
+    const zh = d.responseData?.translatedText;
+    return (zh && zh !== text && !zh.includes('MYMEMORY')) ? zh : null;
+  } catch(e) { return null; }
+}
+
+async function translateEnToZh(text){
+  const key = text.toLowerCase().trim();
+  if(TRANS_CACHE.has(key)) return TRANS_CACHE.get(key);
+
+  // Google + MyMemory 同时发，取最快成功的那个
+  const result = await Promise.race([
+    tryGoogleTranslate(text).then(zh => zh ? {source:'google', zh} : null),
+    tryMyMemoryTranslate(text).then(zh => zh ? {source:'mymemory', zh} : null),
+  ]);
+
+  if(result && result.zh){
+    TRANS_CACHE.set(key, result.zh);
+    return result.zh;
+  }
+
+  // 如果第一个失败了，等第二个（最多再等2秒）
+  const remaining = result === null ? null : null; // both failed quickly
+  // 实际上 Promise.race 返回第一个 settled promise，如果都失败就都返回 null
+  // 再给一次机会：分别等
+  if(!result){
+    const zh = await tryGoogleTranslate(text) || await tryMyMemoryTranslate(text);
+    if(zh) { TRANS_CACHE.set(key, zh); return zh; }
+  }
+
+  TRANS_CACHE.set(key, null);
+  return null;
+}
+
+async function fetchWordDefinitionBilingual(word, chineseHint){
+  const key = word.toLowerCase().trim();
+  if(WORD_CACHE.has(key)){
+    const cached = WORD_CACHE.get(key);
+    if(cached._bilingual) return cached._bilingual;
+  }
+  const enResult = await fetchWordDefinition(word);
+  if(!enResult.found) return enResult;
+
+  const primaryDef = enResult.definitions[0];
+  const conciseZh = primaryDef ? await translateEnToZh(primaryDef.def) : null;
+
+  const zhDefs = await Promise.all(enResult.definitions.map(async d => {
+    const zhDef = await translateEnToZh(d.def);
+    const zhEx = d.ex ? await translateEnToZh(d.ex) : null;
+    return { en: d.def, zh: zhDef, ex: d.ex, exZh: zhEx };
+  }));
+  const result = { ...enResult, conciseZh, zhDefs };
+  if(WORD_CACHE.has(key)){
+    WORD_CACHE.get(key)._bilingual = result;
+  }
+  return result;
 }
 
 // ============================================================
@@ -1564,13 +1686,14 @@ function showWordPopup(wordEl){
 
   const ov=document.createElement('div');ov.className='popup-overlay';
   ov.innerHTML=`<div class="popup-sheet"><div class="popup-handle"></div>
-    <div class="popup-word">${escapeHTML(en)}</div>
+    <div class="popup-word">${escapeHTML(en)} <span class="popup-chinese-hint">← ${escapeHTML(cn)}</span></div>
     <div class="popup-phonetic" id="pp">查询中…</div>
-    <div class="popup-original">中文原词：${escapeHTML(cn)}</div>
-    ${ctxSentence?`<div style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin:6px 0;padding:6px 10px;background:var(--bg-alt);border-radius:6px;font-family:var(--font-reading)">📖 ${escapeHTML(ctxSentence)}</div>`:''}
+    ${ctxSentence?`<div class="popup-ctx">📖 ${escapeHTML(ctxSentence)}</div>`:''}
     <span class="popup-tag">${escapeHTML(pos)}${ln2?' · '+ln2:''}</span>
-    <div class="popup-defs" id="pd">正在查询词典释义…</div>
-    <div class="popup-example" id="pe" style="display:none"></div>
+    <div class="popup-section-label">简明释义</div>
+    <div class="popup-concise" id="pconcise">查询中…</div>
+    <div class="popup-section-label">牛津释义</div>
+    <div class="popup-defs" id="pd">正在查询…</div>
     <div class="popup-actions">
       <button class="popup-btn" id="pbk">✓ 标记已知</button>
       <button class="popup-btn" id="pbBad" style="color:#c0392b;border-color:rgba(192,57,43,0.2)">✗ 词不达意</button>
@@ -1582,18 +1705,74 @@ function showWordPopup(wordEl){
   ov.addEventListener('click',e=>{if(e.target===ov)close();});
   ov.querySelector('#pbc').addEventListener('click',close);
   ov.querySelector('#pbk').addEventListener('click',async()=>{markAll(en);state.knownWords.add(en.toLowerCase());await saveKnownWord(en);toast('已标记 ✓');close();});
-  ov.querySelector('#pbBad').addEventListener('click',()=>{
+  ov.querySelector('#pbBad').addEventListener('click',async()=>{
     // 把当前替换恢复为中文原词
     wordEl.replaceWith(document.createTextNode(cn));
-    toast('已恢复原文，感谢反馈 🙏'); close();
+    // 记录这个词不再替换
+    await saveBadWord(cn, en);
+    // 清除该书的缓存，下次会用新规则重新处理
+    if(state.currentBook) state.processedCache.delete(state.currentBook.id);
+    toast('已恢复原文，不再替换此词 🙏'); close();
   });
 
-  fetchWordDefinition(en).then(d=>{
+  // 展示牛津英文释义（权威可靠），中文释义用词典自带词条
+  const ppEl = ov.querySelector('#pp');
+  const pconciseEl = ov.querySelector('#pconcise');
+  const pdEl = ov.querySelector('#pd');
+
+  // 第1阶段：先出牛津英文释义（立即展示）
+  pconciseEl.textContent = '翻译中…';
+
+  fetchWordDefinition(en).then(d => {
     if(d.found){
-      ov.querySelector('#pp').textContent=d.phonetic||'';
-      if(d.definitions.length){ov.querySelector('#pd').innerHTML=d.definitions.map(x=>`<div class="di">· ${escapeHTML(x.def)}</div>`).join('');const ex=d.definitions.find(x=>x.ex)?.ex;if(ex){ov.querySelector('#pe').textContent=`"${ex}"`;ov.querySelector('#pe').style.display='';}}else ov.querySelector('#pd').textContent='暂无释义';
-      if(d.pos)ov.querySelector('.popup-tag').textContent=d.pos+(ln2?' · '+ln2:'');
-    }else{ov.querySelector('#pp').textContent='';ov.querySelector('#pd').textContent='词典暂无收录，已显示对应翻译';}
+      ppEl.textContent = d.phonetic||'';
+      if(d.pos) ov.querySelector('.popup-tag').textContent = d.pos + (ln2?' · '+ln2:'');
+      // 先展示英文定义
+      if(d.definitions.length){
+        pdEl.innerHTML = d.definitions.map(x => {
+          const exPart = x.ex ? `<div class="di-ex">${escapeHTML(x.ex)}</div>` : '';
+          return `<div class="di"><div class="di-en">${escapeHTML(x.def)}</div>${exPart}</div>`;
+        }).join('');
+      } else {
+        pdEl.textContent = '暂无牛津释义';
+      }
+
+      // 第2阶段：翻译成中文（Google + MyMemory 竞速，填充到弹窗）
+      const posLabel = d.pos||pos;
+      // 先翻简明释义
+      if(d.definitions[0]){
+        translateEnToZh(d.definitions[0].def).then(zh => {
+          if(zh){
+            pconciseEl.innerHTML = `<span class="concise-pos">${escapeHTML(posLabel)}.</span> ${escapeHTML(zh)}`;
+          } else {
+            pconciseEl.textContent = '（翻译不可用）';
+          }
+        });
+      }
+      // 再翻译每条牛津释义 + 例句
+      Promise.all(d.definitions.map(async def => {
+        const zhDef = await translateEnToZh(def.def);
+        const zhEx = def.ex ? await translateEnToZh(def.ex) : null;
+        return { en: def.def, zh: zhDef, ex: def.ex, exZh: zhEx };
+      })).then(zhDefs => {
+        // 如果简明释义还没更新，用第一个翻译结果补上
+        if(pconciseEl.textContent === '翻译中…' && zhDefs[0]?.zh){
+          pconciseEl.innerHTML = `<span class="concise-pos">${escapeHTML(posLabel)}.</span> ${escapeHTML(zhDefs[0].zh)}`;
+        }
+        // 更新牛津释义为双语对照
+        if(zhDefs.some(x=>x.zh)){
+          pdEl.innerHTML = zhDefs.map(x => {
+            const zhPart = x.zh ? `<div class="di-zh">${escapeHTML(x.zh)}</div>` : '';
+            const exPart = x.ex ? `<div class="di-ex">${escapeHTML(x.ex)}${x.exZh ? `<span class="di-exZh">${escapeHTML(x.exZh)}</span>` : ''}</div>` : '';
+            return `<div class="di"><div class="di-en">${escapeHTML(x.en)}</div>${zhPart}${exPart}</div>`;
+          }).join('');
+        }
+      });
+    } else {
+      ppEl.textContent = '';
+      pconciseEl.textContent = '词典暂无收录';
+      pdEl.textContent = '已显示对应中文翻译';
+    }
   });
 }
 
@@ -1705,6 +1884,7 @@ async function openBook(book){
   await doSaveProgress(); // 保存上一本书的进度
   state.currentBook=book; state.viewMode='processed';
   dom.btnToggleMode.textContent='原文';dom.btnToggleMode.classList.remove('active');
+  applyAll(); // 确保设置生效（字体、主题等）
 
   if(!state.processedCache.has(book.id)){
     dom.loadingText.textContent='正在嵌入单词…';dom.loadingSub.textContent=book.title;
@@ -1767,8 +1947,16 @@ async function importBook(file){
 }
 
 async function refreshLibrary(){
-  const books=await dbGetAll('books');
-  if(!books.length){dom.libraryEmpty.style.display='';dom.bookList.style.display='none';return;}
+  let books;
+  try {
+    books = await dbGetAll('books');
+  } catch(e) {
+    // DB 可能尚未打开，尝试重新打开
+    console.warn('refreshLibrary: dbGetAll failed, retrying openDB');
+    try { db = await openDB(); books = await dbGetAll('books'); }
+    catch(e2) { console.warn('refreshLibrary: retry failed', e2.message); dom.libraryEmpty.style.display = ''; dom.bookList.style.display = 'none'; return; }
+  }
+  if(!books||!books.length){dom.libraryEmpty.style.display='';dom.bookList.style.display='none';return;}
   dom.libraryEmpty.style.display='none';dom.bookList.style.display='';
   dom.bookList.innerHTML=books.sort((a,b)=>b.createdAt-a.createdAt).map(b=>`<div class="book-card" data-id="${b.id}">
     <span class="icon">📖</span><div class="info"><div class="t">${escapeHTML(b.title)}</div><div class="m">${new Date(b.createdAt).toLocaleDateString('zh-CN')} · ${(b.fileSize/1024).toFixed(1)}KB${b.encoding&&b.encoding!=='utf-8'?' · '+b.encoding.toUpperCase():''}</div></div>
@@ -1785,11 +1973,19 @@ async function loadSettings(){const d=await dbGet('settings','app');if(d){try{Ob
 // 初始化
 // ============================================================
 async function init(){
-  // 初始化数据库（失败不阻塞）
-  try{ db=await openDB(); await loadSettings(); await loadKnownWords(); await refreshLibrary(); }
-  catch(e){ console.warn('DB init issue:',e.message); }
+  // 初始化数据库——每个步骤独立，互不阻塞
+  try { db = await openDB(); } catch(e) { console.warn('DB open issue:', e.message); db = null; }
 
-  // 注册所有事件监听
+  // 有DB才加载数据，但不阻塞事件注册
+  if (db) {
+    try { await loadSettings(); } catch(e) { console.warn('Settings load issue:', e.message); }
+    try { await loadKnownWords(); } catch(e) { console.warn('KnownWords load issue:', e.message); }
+    try { await loadBadWords(); } catch(e) { console.warn('BadWords load issue:', e.message); }
+  }
+  // refreshLibrary 有自己独立的 DB 重试逻辑
+  try { await refreshLibrary(); } catch(e) { console.warn('Library refresh issue:', e.message); }
+
+  // 注册所有事件监听（不受DB状态影响，保证基本功能可用）
   $('#btnImport').addEventListener('click',()=>dom.fileInput.click());
   $('#btnImportMain').addEventListener('click',()=>dom.fileInput.click());
   dom.fileInput.addEventListener('change',e=>{const f=e.target.files[0];if(f)importBook(f);dom.fileInput.value='';});
@@ -1865,7 +2061,16 @@ async function init(){
     // currentView是library时，popstate正常退出网页
   });
 
-  console.log('📚 v3 — '+DICT.length+'词条 · '+state.knownWords.size+'已知 · 目录'+state.chapters.length+'章');
+  // 注册 Service Worker（离线缓存）
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      console.log('📦 SW registered:', reg.scope);
+    }).catch(e => {
+      console.warn('SW registration failed:', e.message);
+    });
+  }
+
+  console.log('📚 v4 — '+DICT.length+'词条 · '+state.knownWords.size+'已知');
 }
 
 document.addEventListener('DOMContentLoaded',init);
