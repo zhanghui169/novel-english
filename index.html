@@ -336,8 +336,8 @@ const DICT = [
   ['冷漠','aloof','adj',1],['热情','fervent','adj',1],
   ['乐观','buoyant','adj',1],['悲观','somber','adj',1],
   ['固执','inflexible','adj',1],['灵活','versatile','adj',1],
-  ['保守','orthodox','adj',1],['激进','militant','adj',1],
-  ['稳定','steadfast','adj',1],['神秘','enigmatic','adj',1],
+  ['保守','conservative','adj',1],['激进','militant','adj',1],
+  ['稳定','stable','adj',1],['神秘','enigmatic','adj',1],
   // 四级动词
   ['意识到','realize','v',1],['归类','classify','v',1],['概括','encapsulate','v',1],
   ['分析','scrutinize','v',1],['评估','gauge','v',1],['预测','foresee','v',1],
@@ -347,13 +347,13 @@ const DICT = [
   ['轻视','belittle','v',1],['夸大','embellish','v',1],
   ['促进','catalyze','v',1],['阻碍','stifle','v',1],['抑制','restrain','v',1],
   ['激发','galvanize','v',1],['触发','precipitate','v',1],['加剧','compound','v',1],
-  ['缓解','appease','v',1],['消除','purge','v',1],
-  ['培养','foster','v',1],['适应','acclimate','v',1],['优化','streamline','v',1],
-  ['整合','amalgamate','v',1],['颠覆','upend','v',1],['革新','revamp','v',1],
-  ['延续','sustain','v',1],['中断','sever','v',1],['维持','uphold','v',1],
-  ['削弱','diminish','v',1],['弥补','redeem','v',1],['替代','displace','v',1],
-  ['面临','grapple','v',1],['规避','sidestep','v',1],['反抗','rebel','v',1],
-  ['忍受','endure','v',1],['崩溃','collapse','v',1],
+  ['缓解','alleviate','v',1],['消除','purge','v',1],
+  ['培养','foster','v',1],['适应','adapt','v',1],['优化','streamline','v',1],
+  ['整合','amalgamate','v',1],['颠覆','subvert','v',1],['革新','revamp','v',1],
+  ['延续','sustain','v',1],['中断','sever','v',1],['维持','maintain','v',1],
+  ['削弱','diminish','v',1],['弥补','redeem','v',1],['替代','replace','v',1],
+  ['面临','confront','v',1],['规避','sidestep','v',1],['反抗','rebel','v',1],
+  ['忍受','endure','v',1],['崩溃','break down','v',1],
   ['反思','ruminate','v',1],['醒悟','disillusion','v',1],
   // 四级副词
   ['本质上','inherently','adv',1],['相对地','proportionally','adv',1],
@@ -397,8 +397,8 @@ const DICT = [
   ['民主','franchise','n',2],['专制','tyranny','n',2],['官僚','officialdom','n',2],
   ['精英','meritocracy','n',2],['民粹','demagoguery','n',2],
   ['殖民','settlement','n',2],['解放','deliverance','n',2],
-  ['革命','insurrection','n',2],['改革','restructuring','n',2],
-  ['创新','pioneering','n',2],['颠覆','subversion','n',2],
+  ['革命','revolution','n',2],['改革','restructuring','n',2],
+  ['创新','innovation','n',2],['颠覆','subversion','n',2],
   ['进化','metamorphosis','n',2],['退化','atrophy','n',2],
   ['分化','cleavage','n',2],['融合','coalescence','n',2],
   ['全球化','interdependence','n',2],['多元化','heterogeneity','n',2],
@@ -947,8 +947,8 @@ const DICT = [
   ['处理','dispose of','v',1],['解决','untangle','v',1],['应对','grapple with','v',1],
   ['承受','sustain','v',1],['容忍','brook','v',1],['接纳','embrace','v',1],
   ['抗拒','repulse','v',1],['排斥','exclude','v',1],['驱逐','evict','v',1],
-  ['吸引','allure','v',1],['诱惑','entice','v',1],['迷惑','ensnare','v',1],
-  ['欺骗','hoodwink','v',1],['蒙蔽','delude','v',1],['隐瞒','withhold','v',1],
+  ['吸引','attract','v',1],['诱惑','entice','v',1],['迷惑','ensnare','v',1],
+  ['欺骗','deceive','v',1],['蒙蔽','delude','v',1],['隐瞒','withhold','v',1],
   ['泄露','divulge','v',1],['暴露','unmask','v',1],['出卖','betray','v',1],
   ['利用','harness','v',1],['借助','avail oneself of','v',1],['依赖','hinge upon','v',1],
   ['抛弃','forsake','v',1],['放弃','cede','v',1],['舍弃','renounce','v',1],
@@ -1572,49 +1572,85 @@ function stopPeriodicSave(){
 
 async function restoreProgress(bookId){
   // 优先检查书签
-  let percent = 0;
   const bm = getBookmark(bookId);
-  if(bm && bm.percent > 0){
-    percent = bm.percent;
-  } else {
-    // 书签不存在时，回退到自动保存的进度
-    try {
-      const ls = localStorage.getItem('nv_eng_progress_'+bookId);
-      if(ls){ const v = JSON.parse(ls); percent = v.pct || 0; }
-    } catch(e) {}
-    try {
-      const saved = await dbGet('progress', bookId);
-      if(saved && saved.percent > percent) percent = saved.percent;
-    } catch(e) {}
+  if(bm && bm.dataPos){
+    // 书签存在：用段落定位恢复（比百分比更可靠）
+    const el = dom.readerContent;
+    // 等待布局
+    for(let retry=0; retry<50; retry++){
+      await new Promise(r=>setTimeout(r, 50));
+      if(el.scrollHeight > el.clientHeight + 100) break;
+    }
+    // 用 data-pos 找到对应段落并滚动到视口顶部
+    const paras = el.querySelectorAll('p,.chap-title');
+    let found = false;
+    for(const p of paras){
+      const dp = parseInt(p.dataset?.pos);
+      if(dp !== undefined && !isNaN(dp) && dp >= bm.dataPos){
+        p.scrollIntoView({block:'start',behavior:'instant'});
+        found = true;
+        break;
+      }
+    }
+    if(found){
+      toast('🔖 已跳到书签位置 ('+(bm.percent||'?')+'%)');
+    } else if(bm.percent > 0){
+      // 段落定位失败，用百分比兜底
+      setScrollPercent(bm.percent);
+      toast('🔖 已跳到书签位置 ('+bm.percent+'%)');
+    }
+    updateProgressUI();
+    applyFontSize();
+    return;
   }
+
+  // 无书签，回退到自动保存的进度
+  let percent = 0;
+  try {
+    const ls = localStorage.getItem('nv_eng_progress_'+bookId);
+    if(ls){ const v = JSON.parse(ls); percent = v.pct || 0; }
+  } catch(e) {}
+  try {
+    const saved = await dbGet('progress', bookId);
+    if(saved && saved.percent > percent) percent = saved.percent;
+  } catch(e) {}
   if(percent > 0){
     const el = dom.readerContent;
-    // 用 setTimeout 而非 rAF，确保浏览器已完成绘制再设置滚动位置
-    for(let retry=0; retry<40; retry++){
-      await new Promise(r=>setTimeout(r, 60));
+    for(let retry=0; retry<50; retry++){
+      await new Promise(r=>setTimeout(r, 50));
       if(el.scrollHeight > el.clientHeight + 100) break;
     }
     setScrollPercent(percent);
-    // 二次确认：等一小段时间后检查位置是否真的生效
-    await new Promise(r=>setTimeout(r, 200));
+    await new Promise(r=>setTimeout(r, 150));
     const actual = getScrollPercent();
     if(Math.abs(actual - percent) > 10 && percent > 0 && el.scrollHeight > el.clientHeight){
       setScrollPercent(percent);
     }
-    if(bm) toast('🔖 已跳到书签位置 ('+percent+'%)');
   }
   applyFontSize();
 }
 
 // ============================================================
-// 书签功能（手动设置，优先于自动进度）
+// 书签功能（手动设置，优先于自动进度；用段落 data-pos 精确定位）
 // ============================================================
 function getBookmark(bookId){
   try{const raw=localStorage.getItem('nv_eng_bookmark_'+bookId);return raw?JSON.parse(raw):null;}catch(e){return null;}
 }
-function saveBookmark(bookId,percent){
-  const data={percent,updatedAt:Date.now()};
+function saveBookmark(bookId){
+  const el=dom.readerContent; if(!el) return;
+  const pct=getScrollPercent();
+  // 找到当前视口顶部的段落（用于精确定位）
+  const paras=el.querySelectorAll('p,.chap-title');
+  let dataPos=0;
+  const elRect=el.getBoundingClientRect();
+  const viewTop=el.scrollTop;
+  for(const p of paras){
+    // p.offsetTop 相对于 offsetParent，需减去 el 的 offset 得到相对位置
+    if(p.offsetTop - el.offsetTop >= viewTop - 20){ dataPos=parseInt(p.dataset?.pos)||0; break; }
+  }
+  const data={percent:pct, dataPos, updatedAt:Date.now()};
   localStorage.setItem('nv_eng_bookmark_'+bookId,JSON.stringify(data));
+  toast('🔖 书签已设置 ('+pct+'%)');
 }
 function removeBookmark(bookId){
   localStorage.removeItem('nv_eng_bookmark_'+bookId);
@@ -2086,10 +2122,8 @@ async function init(){
       updateBookmarkUI();
       toast('书签已移除');
     }else{
-      const pct=getScrollPercent();
-      saveBookmark(state.currentBook.id,pct);
+      saveBookmark(state.currentBook.id);
       updateBookmarkUI();
-      toast('🔖 书签已设置');
     }
   });
   $('#btnBack').addEventListener('click',async()=>{
